@@ -86,8 +86,21 @@ def scan_website(website_url):
 
 def main():
     website_urls = [
+
           'https://ironwoodins.com/',
           'https://www.linqbymarsh.com/linq/auth/login'
+
+        'https://ironwoodins.com/',
+        'https://www.linqbymarsh.com/linq/auth/login',
+        'https://icip.marshpm.com/FedExWeb/login.action',
+        'https://www.marsh.com/us/home.html',
+        'https://www.marsh.com/us/insights/risk-in-context.html',
+        'https://www.dovetailexchange.com/Account/Login'
+        'https://www.victorinsurance.com/us/en.html',
+        'https://www.victorinsurance.it'
+        'https://wwww.victorinsurance.nl'
+        'https://www.marshunderwritingsubmissioncenter.com',
+        'https://victorinsurance.nl/verzekeraars'
     ]
 
     print("Starting the script")
