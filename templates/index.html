@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Cookie Scanner</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f7f7f7;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+
+        .container {
+            background-color: white;
+            border-radius: 10px;
+            box-shadow: 0px 2px 10px rgba(0, 0, 0, 0.1);
+            padding: 20px;
+            width: 400px;
+        }
+
+        h1 {
+            font-size: 24px;
+            margin-bottom: 10px;
+        }
+
+        p {
+            font-size: 16px;
+            margin-bottom: 20px;
+        }
+
+        #scanButton {
+            padding: 10px 20px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.2s, opacity 0.2s;
+        }
+
+        #scanButton:hover {
+            background-color: #0056b3;
+        }
+
+        #scanButton:active {
+            background-color: #00337a;
+        }
+
+        #cookieResults {
+            margin-top: 20px;
+            border-top: 1px solid #ccc;
+            padding-top: 10px;
+            font-size: 14px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Cookie Scanner</h1>
+        <p>Click the button below to start scanning cookies.</p>
+        <button id="scanButton">Scan Cookies</button>
+        <div id="cookieResults"></div>
+    </div>
+
+    <script>
+        document.getElementById("scanButton").addEventListener("click", async function () {
+            try {
+                const response = await fetch("/scan_cookies");
+                const data = await response.json();
+
+                const cookieResultsElement = document.getElementById("cookieResults");
+                cookieResultsElement.innerHTML = ""; // Clear previous results
+
+                if (data.cookies && data.cookies.length > 0) {
+                    data.cookies.forEach(cookie => {
+                        const cookieInfo = `
+                            <div>
+                                <strong>Cookie Name:</strong> ${cookie.name}<br>
+                                <strong>Value:</strong> ${cookie.value}<br>
+                                <strong>Domain:</strong> ${cookie.domain}<br>
+                                <strong>Path:</strong> ${cookie.path}<br>
+                                <strong>Expires:</strong> ${cookie.expiry}<br>
+                                <strong>Secure:</strong> ${cookie.secure}
+                            </div>
+                            <hr>
+                        `;
+                        cookieResultsElement.insertAdjacentHTML("beforeend", cookieInfo);
+                    });
+                } else {
+                    cookieResultsElement.innerHTML = "No cookies found.";
+                }
+            } catch (error) {
+                console.error("Error fetching cookie data:", error);
+            }
+        });
+    </script>
+</body>
+</html>
