@@ -145,19 +145,19 @@ def main():
     #To test:
     #https://www.victorinsurance.nl,https://www.marshunderwritingsubmissioncenter.com,https://victorinsurance.nl/verzekeraars
     
-    # website_urls = [
-    #     'https://ironwoodins.com/',
-    #     'https://www.linqbymarsh.com/linq/auth/login',
-    #     'https://icip.marshpm.com/FedExWeb/login.action',
-    #     'https://www.marsh.com/us/home.html',
-    #     'https://www.marsh.com/us/insights/risk-in-context.html',
-    #     'https://www.dovetailexchange.com/Account/Login',
-    #     'https://www.victorinsurance.com/us/en.html',
-    #     'https://www.victorinsurance.it',
-    #     'https://www.victorinsurance.nl',
-    #     'https://www.marshunderwritingsubmissioncenter.com',
-    #     'https://victorinsurance.nl/verzekeraars'
-    # ]
+    website_urls = [
+        'https://ironwoodins.com/',
+        'https://www.linqbymarsh.com/linq/auth/login',
+        'https://icip.marshpm.com/FedExWeb/login.action',
+        'https://www.marsh.com/us/home.html',
+        'https://www.marsh.com/us/insights/risk-in-context.html',
+        'https://www.dovetailexchange.com/Account/Login',
+        'https://www.victorinsurance.com/us/en.html',
+        'https://www.victorinsurance.it',
+        'https://www.victorinsurance.nl',
+        'https://www.marshunderwritingsubmissioncenter.com',
+        'https://victorinsurance.nl/verzekeraars'
+     ]
 
     with open(csv_file_path + "_printed_info.csv", mode="w", newline="", encoding="utf-8") as file:
         writer = csv.writer(file)
