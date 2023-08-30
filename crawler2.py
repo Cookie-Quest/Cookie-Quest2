@@ -68,7 +68,6 @@ def check_and_report_banner(driver):
 
     return False
 
-
 def calculate_cookie_duration(expiry_timestamp):
     if expiry_timestamp is not None:
         expiry_datetime = datetime.datetime.fromtimestamp(expiry_timestamp)
@@ -111,6 +110,8 @@ def scan_website(website_url):
         if cookie['name'] in cookie_names:
             printed_info.append(f"Cookie Name: {cookie['name']}")
             printed_info.append(f"Domain: {cookie['domain']}")
+            print(f"Scanned website: {cookie['domain']}")
+            print(f"Cookie Name: {cookie['name']}")
             expiry_timestamp = get_cookie_expiry(cookie)
             expiry_formatted = format_expiry(expiry_timestamp)
             printed_info.append(f"Expires: {expiry_formatted}")
@@ -131,24 +132,32 @@ def scan_website(website_url):
     driver.quit()
 
 def main():
-    website_urls = [
-        'https://ironwoodins.com/',
-        'https://www.linqbymarsh.com/linq/auth/login',
-        'https://icip.marshpm.com/FedExWeb/login.action',
-        'https://www.marsh.com/us/home.html',
-        'https://www.marsh.com/us/insights/risk-in-context.html',
-        'https://www.dovetailexchange.com/Account/Login',
-        'https://www.victorinsurance.com/us/en.html',
-        'https://www.victorinsurance.it',
-        'https://www.victorinsurance.nl',
-        'https://www.marshunderwritingsubmissioncenter.com',
-        'https://victorinsurance.nl/verzekeraars'
-    ]
+
+        # Get websites from user input
+    user_input = input("Please enter a URL or multiple URLs separated by commas: ")
+    website_urls = [x.strip() for x in user_input.split(",")]
 
     print("Starting the script")
     for url in website_urls:
         scan_website(url)
     print("Script execution finished")
+
+    #To test:
+    #https://www.victorinsurance.nl,https://www.marshunderwritingsubmissioncenter.com,https://victorinsurance.nl/verzekeraars
+    
+    # website_urls = [
+    #     'https://ironwoodins.com/',
+    #     'https://www.linqbymarsh.com/linq/auth/login',
+    #     'https://icip.marshpm.com/FedExWeb/login.action',
+    #     'https://www.marsh.com/us/home.html',
+    #     'https://www.marsh.com/us/insights/risk-in-context.html',
+    #     'https://www.dovetailexchange.com/Account/Login',
+    #     'https://www.victorinsurance.com/us/en.html',
+    #     'https://www.victorinsurance.it',
+    #     'https://www.victorinsurance.nl',
+    #     'https://www.marshunderwritingsubmissioncenter.com',
+    #     'https://victorinsurance.nl/verzekeraars'
+    # ]
 
     with open(csv_file_path + "_printed_info.csv", mode="w", newline="", encoding="utf-8") as file:
         writer = csv.writer(file)
