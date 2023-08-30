@@ -1,74 +1,83 @@
 <!DOCTYPE html>
 <html>
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Cookie Scanner</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script>
-      tailwind.config = {
-        theme: {
-          extend: {
-            colors: {
-              clifford: "#1d4ed8",
-            },
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Cookie Scanner</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            clifford: "#1d4ed8",
           },
         },
-      };
-    </script>
-  </head>
-  <body class="flex justify-center">
-  <div class="flex justify-center px-4 py-16">
-    <div class="container">
-      <h1 class="text-3xl font-bold text-clifford">Cookie Scanner</h1>
-      <p>Click the button below to start scanning cookies.</p>
-      <button
-        id="scanButton"
-        class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-xl"
-      >
-        Scan Cookies
-      </button>
-      <div id="cookieResults"></div>
+      },
+    };
+  </script>
+</head>
+<body class="flex justify-center items-start min-h-screen bg-gray-100">
+  <div class="container mt-16">
+    <h1 class="text-3xl font-bold text-center text-clifford">Cookie Scanner</h1>
+    <p class="text-center mt-2">Click the button below to start scanning cookies.</p>
+    <button
+      id="scanButton"
+      class="block mx-auto mt-4 bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-xl"
+    >
+      Scan Cookies
+    </button>
+      <div id="cookieResults" class="mt-4">
+        <table class="border-collapse border border-gray-400 w-full">
+          <thead class="bg-gray-200">
+            <tr class="hover:bg-gray-100">
+              <th class="border border-gray-400 px-4 py-2">Website</th>
+              <th class="border border-gray-400 px-4 py-2">Cookie Name</th>
+              <!-- <th class="border border-gray-400 px-4 py-2">Value</th> -->
+              <th class="border border-gray-400 px-4 py-2">Domain</th>
+              <!-- <th class="border border-gray-400 px-4 py-2">Path</th> -->
+              <th class="border border-gray-400 px-4 py-2">Expires</th>
+              <th class="border border-gray-400 px-4 py-2">Secure</th>
+            </tr>
+          </thead>
+          <tbody id="cookieTableBody">
+            <!-- Rows will be dynamically added here -->
+          </tbody>
+        </table>
+      </div>
     </div>
 
     <script>
-      document
-        .getElementById("scanButton")
-        .addEventListener("click", async function () {
-          try {
-            const response = await fetch("/scan_cookies");
-            const data = await response.json();
+      document.getElementById("scanButton").addEventListener("click", async function () {
+        try {
+          const response = await fetch("/scan_cookies");
+          const data = await response.json();
 
-            const cookieResultsElement =
-              document.getElementById("cookieResults");
-            cookieResultsElement.innerHTML = "";
+          const cookieTableBody = document.getElementById("cookieTableBody");
+          cookieTableBody.innerHTML = "";
 
-            if (data.cookies && data.cookies.length > 0) {
-              data.cookies.forEach((cookie) => {
-                const cookieInfo = `
-                            <div>
-                                <strong>Cookie Name:</strong> ${cookie.name}<br>
-                                <strong>Value:</strong> ${cookie.value}<br>
-                                <strong>Domain:</strong> ${cookie.domain}<br>
-                                <strong>Path:</strong> ${cookie.path}<br>
-                                <strong>Expires:</strong> ${cookie.expiry}<br>
-                                <strong>Secure:</strong> ${cookie.secure}
-                            </div>
-                            <hr>
-                        `;
-                cookieResultsElement.insertAdjacentHTML(
-                  "beforeend",
-                  cookieInfo
-                );
-              });
-            } else {
-              cookieResultsElement.innerHTML = "No cookies found.";
-            }
-          } catch (error) {
-            console.error("Error fetching cookie data:", error);
+          if (data.cookies && data.cookies.length > 0) {
+            data.cookies.forEach((cookie) => {
+              const cookieRow = `
+                <tr class="hover:bg-gray-100">
+                  <td class="border border-gray-400 px-4 py-2">${cookie.website}</td>
+                  <td class="border border-gray-400 px-4 py-2">${cookie.name}</td>
+                  <td class="border border-gray-400 px-4 py-2">${cookie.domain}</td>
+                  <td class="border border-gray-400 px-4 py-2">${cookie.expiry}</td>
+                  <td class="border border-gray-400 px-4 py-2">${cookie.secure}</td>
+                  </tr>
+                  `;
+                  cookieTableBody.insertAdjacentHTML("beforeend", cookieRow);
+                  //   <td class="border border-gray-400 px-4 py-2">${cookie.value}</td>
+                //   <td class="border border-gray-400 px-4 py-2">${cookie.path}</td>
+            });
+          } else {
+            cookieTableBody.innerHTML = `<tr><td colspan="7" class="border border-gray-400 px-4 py-2 text-center">No cookies found.</td></tr>`;
           }
-        });
+        } catch (error) {
+          console.error("Error fetching cookie data:", error);
+        }
+      });
     </script>
-    </div>
   </body>
 </html>
