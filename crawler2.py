@@ -1,33 +1,62 @@
-import sched
-import time
 from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
-from selenium.common.exceptions import NoSuchElementException, TimeoutException
+from selenium.common.exceptions import TimeoutException
 import datetime
+import time
 
 def format_expiry(expiry_timestamp):
-    if expiry_timestamp:
+    if expiry_timestamp is not None:
         expiry_datetime = datetime.datetime.fromtimestamp(expiry_timestamp)
         return expiry_datetime.strftime('%Y-%m-%d %H:%M:%S')
-    return "N/A"
+    return "Session Cookie (no explicit expiry)"
+
+def get_cookie_expiry(cookie):
+    if 'expiry' in cookie:
+        return cookie['expiry']
+    elif 'expires' in cookie:
+        return cookie['expires']
+    elif 'max_age' in cookie:
+        return time.time() + cookie['max_age']
+    elif 'Expires / Max-Age' in cookie:
+        expires_max_age = cookie['Expires / Max-Age']
+        parts = expires_max_age.split('/')
+        if len(parts) == 2:
+            expires_date_str, max_age_str = parts
+            expires_date = datetime.datetime.strptime(expires_date_str.strip(), '%a, %d-%b-%Y %H:%M:%S %Z')
+            max_age = int(max_age_str.strip())
+            return expires_date.timestamp() + max_age
+    return None
 
 def check_and_report_banner(driver):
     banner_identifiers = [
-        ("ID", "truste-consent-track"),
+        ("ID", "truste-consent-track")
+        ("CLASS_NAME", "osano-cm-dialog__buttons"),
+        ("ID", "osano-cm-buttons")  # ID for the second banner
+
         ("CLASS_NAME", "osano-cm-dialog__buttons osano-cm-buttons"),
         ("ID", "c0d8f56f-f1e4-448c-ae61-0afc444db179")  # ID for the second banner
+
     ]
     
     for identifier_type, identifier_value in banner_identifiers:
         try:
+
+            wait = WebDriverWait(driver, 5)  # Reduced waiting time for efficiency
+            
+            if identifier_type == "ID":
+                wait.until(EC.presence_of_element_located((By.ID, identifier_value)))
+            elif identifier_type == "CLASS_NAME":
+                wait.until(EC.presence_of_element_located((By.CLASS_NAME, identifier_value)))
+
             if identifier_type == "ID":
                 WebDriverWait(driver, 10).until(EC.presence_of_element_located((By.ID, identifier_value)))
             elif identifier_type == "CLASS_NAME":
                 WebDriverWait(driver, 10).until(EC.presence_of_element_located((By.CLASS_NAME, identifier_value)))
+
             
             consent_banner_div = driver.find_element(getattr(By, identifier_type), identifier_value)
             buttons = consent_banner_div.find_elements(By.TAG_NAME, "button")
@@ -36,9 +65,12 @@ def check_and_report_banner(driver):
                 print(f"Number of buttons: {len(buttons)}")
                 for idx, button in enumerate(buttons, start=1):
                     print(f"Button {idx} text: {button.text}")
+                return True
             else:
                 print(f"No buttons found in the consent banner with {identifier_type} '{identifier_value}'.")
             
+
+
             # Special handling for second banner
             if identifier_value == "c0d8f56f-f1e4-448c-ae61-0afc444db179":
                 second_banner_button_div = consent_banner_div.find_element(By.CLASS_NAME, "osano-cm-dialog__buttons")
@@ -46,9 +78,19 @@ def check_and_report_banner(driver):
                 print(f"Button within second banner: {second_banner_button.text}")
             
             return True
+
         except TimeoutException:
             continue
+
     return False
+
+
+def calculate_cookie_duration(expiry_timestamp):
+    if expiry_timestamp is not None:
+        expiry_datetime = datetime.datetime.fromtimestamp(expiry_timestamp)
+        current_datetime = datetime.datetime.now()
+        duration = expiry_datetime - current_datetime
+        return duration
 
 def scan_website(website_url):
     chrome_options = Options()
@@ -63,7 +105,19 @@ def scan_website(website_url):
     cookie_names = [
         'osano_consentmanager',
         'osano_consentmanager_uuid',
-        'TrustArc',
+        'visitor_id395202-hash',
+        's_cc',
+        'notice_behavior',
+        'mbox',
+        'ln_or',
+        'linq_auth_redirect_addr',
+        'at_check',
+        '_gid',
+        '_gcl_au',
+        '_ga',
+        'AWSALBCORS',
+        'AWSALB',
+        'AMCV_7205F0F5559E57A87F000101%40AdobeOrg',
         'JSESSIONID'
     ]
 
@@ -73,8 +127,15 @@ def scan_website(website_url):
         if cookie['name'] in cookie_names:
             print(f"Cookie Name: {cookie['name']}")
             print(f"Domain: {cookie['domain']}")
-            print(f"Expires: {format_expiry(cookie['expiry'])}")
+            expiry_timestamp = get_cookie_expiry(cookie)
+            expiry_formatted = format_expiry(expiry_timestamp)
+            print(f"Expires: {expiry_formatted}")
             print(f"Secure: {cookie['secure']}")
+
+            duration = calculate_cookie_duration(expiry_timestamp)
+            if duration is not None:
+                print(f"Time until expiry: {duration}")
+            
             print("-----")
 
     # Check for consent banners
@@ -87,9 +148,6 @@ def scan_website(website_url):
 def main():
     website_urls = [
 
-          'https://ironwoodins.com/',
-          'https://www.linqbymarsh.com/linq/auth/login'
-
         'https://ironwoodins.com/',
         'https://www.linqbymarsh.com/linq/auth/login',
         'https://icip.marshpm.com/FedExWeb/login.action',
@@ -101,6 +159,7 @@ def main():
         'https://wwww.victorinsurance.nl'
         'https://www.marshunderwritingsubmissioncenter.com',
         'https://victorinsurance.nl/verzekeraars'
+ 
     ]
 
     print("Starting the script")
@@ -108,13 +167,5 @@ def main():
         scan_website(url)
     print("Script execution finished")
 
-s = sched.scheduler(time.time, time.sleep)
-
-def run_script(sc):
-    main()
-    s.enter(150, 1, run_script, (sc,))
-
 if __name__ == "__main__":
-
-    s.enter(0, 1, run_script, (s,))
-    s.run()
+    main()
