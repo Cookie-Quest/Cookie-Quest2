@@ -5,8 +5,11 @@ from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.common.exceptions import TimeoutException
-import datetime
-import time, sched
+import time, sched, csv, datetime
+
+csv_file_path = "crawler_csv2"
+data = {'page title': [], 'Cookie Name': [], 'Domain': [], 'Expires': [], 'Secure': []}
+printed_info = []
 
 
 def format_expiry(expiry_timestamp):
@@ -51,13 +54,13 @@ def check_and_report_banner(driver):
             consent_banner_div = driver.find_element(getattr(By, identifier_type), identifier_value)
             buttons = consent_banner_div.find_elements(By.TAG_NAME, "button")
             if buttons:
-                print(f"Consent banner with {identifier_type} '{identifier_value}' is present on the page:")
-                print(f"Number of buttons: {len(buttons)}")
+                printed_info.append(f"Consent banner with {identifier_type} '{identifier_value}' is present on the page:")
+                printed_info.append(f"Number of buttons: {len(buttons)}")
                 for idx, button in enumerate(buttons, start=1):
-                    print(f"Button {idx} text: {button.text}")
+                    printed_info.append(f"Button {idx} text: {button.text}")
                 return True
             else:
-                print(f"No buttons found in the consent banner with {identifier_type} '{identifier_value}'.")
+                printed_info.append(f"No buttons found in the consent banner with {identifier_type} '{identifier_value}'.")
             
         except TimeoutException:
             continue
@@ -77,7 +80,7 @@ def scan_website(website_url):
     service = Service('./driver/chromedriver.exe')
     driver = webdriver.Chrome(service=service, options=chrome_options)
 
-    print(f"Scanned website: {website_url}")
+    printed_info.append(f"Scanned website: {website_url}")
     driver.get(website_url)
     print("Page title:", driver.title)
 
@@ -104,12 +107,14 @@ def scan_website(website_url):
 
     for cookie in cookies:
         if cookie['name'] in cookie_names:
+            printed_info.append(f"Cookie Name: {cookie['name']}")
+            printed_info.append(f"Domain: {cookie['domain']}")
             print(f"Scanned website: {cookie['domain']}")
             print(f"Cookie Name: {cookie['name']}")
             expiry_timestamp = get_cookie_expiry(cookie)
             expiry_formatted = format_expiry(expiry_timestamp)
-            print(f"Expires: {expiry_formatted}")
-            print(f"Secure: {cookie['secure']}")
+            printed_info.append(f"Expires: {expiry_formatted}")
+            printed_info.append(f"Secure: {cookie['secure']}")
 
             duration = calculate_cookie_duration(expiry_timestamp)
             if duration is not None:
@@ -121,6 +126,7 @@ def scan_website(website_url):
     banner_present = check_and_report_banner(driver)
     if not banner_present:
         print("No consent banners found on the page.")
+        printed_info.append("No consent banners found on the page.")
 
     driver.quit()
 
@@ -149,16 +155,31 @@ if __name__ == "__main__":
     #To test:
     #https://www.victorinsurance.nl,https://www.marshunderwritingsubmissioncenter.com,https://victorinsurance.nl/verzekeraars
 
-    # website_urls = [
-    #     'https://ironwoodins.com/',
-    #     'https://www.linqbymarsh.com/linq/auth/login',
-    #     'https://icip.marshpm.com/FedExWeb/login.action',
-    #     'https://www.marsh.com/us/home.html',
-    #     'https://www.marsh.com/us/insights/risk-in-context.html',
-    #     'https://www.dovetailexchange.com/Account/Login',
-    #     'https://www.victorinsurance.com/us/en.html',
-    #     'https://www.victorinsurance.it',
-    #     'https://www.victorinsurance.nl',
-    #     'https://www.marshunderwritingsubmissioncenter.com',
-    #     'https://victorinsurance.nl/verzekeraars'
-    # ]
+    
+    website_urls = [
+        'https://ironwoodins.com/',
+        'https://www.linqbymarsh.com/linq/auth/login',
+        'https://icip.marshpm.com/FedExWeb/login.action',
+        'https://www.marsh.com/us/home.html',
+        'https://www.marsh.com/us/insights/risk-in-context.html',
+        'https://www.dovetailexchange.com/Account/Login',
+        'https://www.victorinsurance.com/us/en.html',
+        'https://www.victorinsurance.it',
+        'https://www.victorinsurance.nl',
+        'https://www.marshunderwritingsubmissioncenter.com',
+        'https://victorinsurance.nl/verzekeraars'
+     ]
+
+    with open(csv_file_path + "_printed_info.csv", mode="w", newline="", encoding="utf-8") as file:
+        writer = csv.writer(file)
+        for info in printed_info:
+            writer.writerow([info])
+
+   
+
+    # Print success message
+    print(f"CSV files '{csv_file_path}.csv' and '{csv_file_path}_printed_info.csv' have been created.")   
+
+
+if __name__ == "__main__":
+    main()
