@@ -47,7 +47,7 @@ def check_and_report_banner(driver):
 
 @app.route('/')
 def index():
-    return render_template('index.html')
+    return render_template('./index.html')
 
 @app.route('/scan_cookies')
 def scan_cookies():
@@ -89,3 +89,6 @@ def scan_cookies():
 
     driver.quit()
     return jsonify({'cookies': scanned_cookies})
+
+if __name__ == '__main__':
+    app.run()
