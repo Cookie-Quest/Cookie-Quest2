@@ -5,13 +5,12 @@ from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.common.exceptions import TimeoutException
-import datetime
-import time
-import csv
+import time, sched, csv, datetime
 
 csv_file_path = "crawler_csv2"
 data = {'page title': [], 'Cookie Name': [], 'Domain': [], 'Expires': [], 'Secure': []}
 printed_info = []
+
 
 def format_expiry(expiry_timestamp):
     if expiry_timestamp is not None:
@@ -142,8 +141,20 @@ def main():
         scan_website(url)
     print("Script execution finished")
 
+s = sched.scheduler(time.time, time.sleep)
+
+def run_script(sc):
+    main()
+    s.enter(150, 1, run_script, (sc,))
+
+if __name__ == "__main__":
+
+    s.enter(0, 1, run_script, (s,))
+    s.run()
+
     #To test:
     #https://www.victorinsurance.nl,https://www.marshunderwritingsubmissioncenter.com,https://victorinsurance.nl/verzekeraars
+
     
     website_urls = [
         'https://ironwoodins.com/',
@@ -172,3 +183,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+
