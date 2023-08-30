@@ -89,6 +89,3 @@ def scan_cookies():
 
     driver.quit()
     return jsonify({'cookies': scanned_cookies})
-
-if __name__ == '__main__':
-    app.run()

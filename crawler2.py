@@ -33,19 +33,30 @@ def get_cookie_expiry(cookie):
 
 def check_and_report_banner(driver):
     banner_identifiers = [
-        ("ID", "truste-consent-track"),
+        ("ID", "truste-consent-track")
         ("CLASS_NAME", "osano-cm-dialog__buttons"),
         ("ID", "osano-cm-buttons")  # ID for the second banner
+
+        ("CLASS_NAME", "osano-cm-dialog__buttons osano-cm-buttons"),
+        ("ID", "c0d8f56f-f1e4-448c-ae61-0afc444db179")  # ID for the second banner
+
     ]
     
     for identifier_type, identifier_value in banner_identifiers:
         try:
+
             wait = WebDriverWait(driver, 5)  # Reduced waiting time for efficiency
             
             if identifier_type == "ID":
                 wait.until(EC.presence_of_element_located((By.ID, identifier_value)))
             elif identifier_type == "CLASS_NAME":
                 wait.until(EC.presence_of_element_located((By.CLASS_NAME, identifier_value)))
+
+            if identifier_type == "ID":
+                WebDriverWait(driver, 10).until(EC.presence_of_element_located((By.ID, identifier_value)))
+            elif identifier_type == "CLASS_NAME":
+                WebDriverWait(driver, 10).until(EC.presence_of_element_located((By.CLASS_NAME, identifier_value)))
+
             
             consent_banner_div = driver.find_element(getattr(By, identifier_type), identifier_value)
             buttons = consent_banner_div.find_elements(By.TAG_NAME, "button")
@@ -58,13 +69,21 @@ def check_and_report_banner(driver):
             else:
                 print(f"No buttons found in the consent banner with {identifier_type} '{identifier_value}'.")
             
+
+
+            # Special handling for second banner
+            if identifier_value == "c0d8f56f-f1e4-448c-ae61-0afc444db179":
+                second_banner_button_div = consent_banner_div.find_element(By.CLASS_NAME, "osano-cm-dialog__buttons")
+                second_banner_button = second_banner_button_div.find_element(By.CLASS_NAME, "osano-cm-manage")
+                print(f"Button within second banner: {second_banner_button.text}")
+            
+            return True
+
         except TimeoutException:
             continue
 
     return False
 
-
-# ... (previous code)
 
 def calculate_cookie_duration(expiry_timestamp):
     if expiry_timestamp is not None:
@@ -128,9 +147,19 @@ def scan_website(website_url):
 
 def main():
     website_urls = [
-          'https://ironwoodins.com/',
-          'https://www.linqbymarsh.com/linq/auth/login',
-          'https://www.marshmanagement.com/'
+
+        'https://ironwoodins.com/',
+        'https://www.linqbymarsh.com/linq/auth/login',
+        'https://icip.marshpm.com/FedExWeb/login.action',
+        'https://www.marsh.com/us/home.html',
+        'https://www.marsh.com/us/insights/risk-in-context.html',
+        'https://www.dovetailexchange.com/Account/Login'
+        'https://www.victorinsurance.com/us/en.html',
+        'https://www.victorinsurance.it'
+        'https://wwww.victorinsurance.nl'
+        'https://www.marshunderwritingsubmissioncenter.com',
+        'https://victorinsurance.nl/verzekeraars'
+ 
     ]
 
     print("Starting the script")
