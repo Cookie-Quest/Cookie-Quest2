@@ -31,10 +31,10 @@
         <table class="border-collapse border border-gray-400 w-full">
           <thead class="bg-gray-200">
             <tr class="hover:bg-gray-100">
-              <th class="border border-gray-400 px-4 py-2">Website</th>
+              <th class="border border-gray-400 px-4 py-2">Scanned Website</th>
               <th class="border border-gray-400 px-4 py-2">Cookie Name</th>
               <!-- <th class="border border-gray-400 px-4 py-2">Value</th> -->
-              <th class="border border-gray-400 px-4 py-2">Domain</th>
+              <!-- <th class="border border-gray-400 px-4 py-2">Domain</th> -->
               <!-- <th class="border border-gray-400 px-4 py-2">Path</th> -->
               <th class="border border-gray-400 px-4 py-2">Expires</th>
               <th class="border border-gray-400 px-4 py-2">Secure</th>
@@ -60,9 +60,8 @@
             data.cookies.forEach((cookie) => {
               const cookieRow = `
                 <tr class="hover:bg-gray-100">
-                  <td class="border border-gray-400 px-4 py-2">${cookie.website}</td>
-                  <td class="border border-gray-400 px-4 py-2">${cookie.name}</td>
                   <td class="border border-gray-400 px-4 py-2">${cookie.domain}</td>
+                  <td class="border border-gray-400 px-4 py-2">${cookie.name}</td>
                   <td class="border border-gray-400 px-4 py-2">${cookie.expiry}</td>
                   <td class="border border-gray-400 px-4 py-2">${cookie.secure}</td>
                   </tr>
