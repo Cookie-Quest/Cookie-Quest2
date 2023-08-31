@@ -1,4 +1,4 @@
-from flask import Flask, render_template, jsonify
+from flask import Flask, render_template, jsonify, send_file
 from selenium import webdriver
 from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.chrome.options import Options
@@ -6,7 +6,7 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.common.exceptions import TimeoutException, NoSuchElementException
-
+import pandas as pd
 import datetime
 import time
 
@@ -200,6 +200,16 @@ def scan_cookies():
         cookie_data.extend(cookies)
 
     return jsonify({"cookies": cookie_data})
+
+@app.route('/download_excel')
+def download_excel():
+    try:
+        # Replace with the actual path to your Excel file
+        excel_file_path = "Capstone Excel report format.xlsx"
+        return send_file(excel_file_path, as_attachment=True)
+    except Exception as e:
+        return f"An error occurred: {str(e)}"
+
 
 if __name__ == "__main__":
     app.run(debug=True)
