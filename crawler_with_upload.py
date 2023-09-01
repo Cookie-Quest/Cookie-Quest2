@@ -6,20 +6,26 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.common.exceptions import TimeoutException, NoSuchElementException
-import time, sched, csv, datetime
-
+from upload_excel_file import upload_excel_file
+from excel_reading import excel_reading
+import datetime
+import time
 
 app = Flask(__name__)
+
 
 # csv_file_path = "crawler_csv2"
 # data = {'page title': [], 'Cookie Name': [], 'Domain': [], 'Expires': [], 'Secure': []}
 # printed_info = []
+
+
 
 def format_expiry(expiry_timestamp):
     if expiry_timestamp is not None:
         expiry_datetime = datetime.datetime.fromtimestamp(expiry_timestamp)
         return expiry_datetime.strftime('%Y-%m-%d %H:%M:%S')
     return "Session Cookie (no explicit expiry)"
+
 
 def get_cookie_expiry(cookie):
     if 'expiry' in cookie:
@@ -38,6 +44,7 @@ def get_cookie_expiry(cookie):
             return expires_date.timestamp() + max_age
     return None
 
+
 def calculate_cookie_duration(expiry_timestamp):
     if expiry_timestamp is not None:
         expiry_datetime = datetime.datetime.fromtimestamp(expiry_timestamp)
@@ -45,22 +52,23 @@ def calculate_cookie_duration(expiry_timestamp):
         duration = expiry_datetime - current_datetime
         return duration
 
+
 def check_and_report_banner(driver):
     banner_identifiers = [
         ("ID", "truste-consent-track"),
         ("CLASS_NAME", "osano-cm-dialog__buttons"),
         ("ID", "osano-cm-buttons")  # ID for the second banner
     ]
-    
+
     for identifier_type, identifier_value in banner_identifiers:
         try:
             wait = WebDriverWait(driver, 5)  # Reduced waiting time for efficiency
-            
+
             if identifier_type == "ID":
                 wait.until(EC.presence_of_element_located((By.ID, identifier_value)))
             elif identifier_type == "CLASS_NAME":
                 wait.until(EC.presence_of_element_located((By.CLASS_NAME, identifier_value)))
-            
+
             consent_banner_div = driver.find_element(getattr(By, identifier_type), identifier_value)
             buttons = consent_banner_div.find_elements(By.TAG_NAME, "button")
             if buttons:
@@ -71,15 +79,17 @@ def check_and_report_banner(driver):
                 return True
             else:
                 print(f"No buttons found in the consent banner with {identifier_type} '{identifier_value}'.")
-            
+
         except TimeoutException:
             continue
 
     return False
 
+
 def check_trustarc(driver):
     html = driver.page_source
     return "trustarcBanner" in html
+
 
 # ... (previous imports and functions)
 
@@ -142,7 +152,7 @@ def scan_website(website_url):
                 print(f"Time until expiry: {duration}")
 
             print("-----")
-            
+
     # Check for consent banners
     banner_present = check_and_report_banner(driver)
     if not banner_present:
@@ -152,29 +162,31 @@ def scan_website(website_url):
     try:
         manage_cookies_link = driver.find_element(By.PARTIAL_LINK_TEXT, "Manage Cookies")
         print("Manage Cookies link found in the footer.")
-        
+
         # Use JavaScript to click the "Manage Cookies" link
         driver.execute_script("arguments[0].click();", manage_cookies_link)
         print("Manage Cookies link clicked successfully.")
         # You can further interact with the pop-up if needed
-        
+
     except NoSuchElementException:
         print("No 'Manage Cookies' link found in the footer.")
-            # Adding cookie data to the list
+        # Adding cookie data to the list
         cookie_data.append({
-                "name": cookie['name'],
-                "domain": cookie['domain'],
-                "expiry": expiry_formatted,
-                "secure": cookie['secure']
-            })
+            "name": cookie['name'],
+            "domain": cookie['domain'],
+            "expiry": expiry_formatted,
+            "secure": cookie['secure']
+        })
 
     driver.quit()
 
     return cookie_data
 
+
 @app.route('/')
 def index():
     return render_template('index.html')
+
 
 @app.route('/scan_cookies')
 def scan_cookies():
@@ -191,7 +203,7 @@ def scan_cookies():
         'https://www.marshunderwritingsubmissioncenter.com',
         'https://victorinsurance.nl/verzekeraars'
     ]
-    
+
     cookie_data = []
 
     for url in website_urls:
@@ -199,15 +211,6 @@ def scan_cookies():
         cookie_data.extend(cookies)
 
     return jsonify({"cookies": cookie_data})
-
-s = sched.scheduler(time.time, time.sleep)
-def run_script(sc):
-    # print("Running scheduled scan...")
-    s.enter(150, 1, run_script, (sc,))
-if __name__ == "__main__":
-    s.enter(0, 1, run_script, (s,))
-    s.run()
-
 
 
 if __name__ == "__main__":
