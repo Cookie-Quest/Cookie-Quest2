@@ -17,6 +17,8 @@ Return tracker details report from the Cookie Consent banner and highlight any m
 - requests library
 - beautifulsoup4 library
 - selenium library
+- pandas
+- openpyxl
 
 
 ## Installation
@@ -26,7 +28,7 @@ git clone https://github.com/Cookie-Quest/Cookie-Quest2.git
 ```
 Navigate to the project directory:
 ```
-cd web-crawler
+cd web-crawler 
 ```
 Install required packages:
 ```

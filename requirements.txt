@@ -2,3 +2,6 @@ beautifulsoup4
 requests
 Flask
 selenium
+pandas
+selenium
+openpyxl
