@@ -146,7 +146,7 @@ def scan_website(website_url):
     ]
 
     cookies = driver.get_cookies()
-    cookie_data = []
+    cookie_data = []       #This will be extracted into a PD DF to export as excel spreadsheet
 
     for cookie in cookies:
         if cookie['name'] in cookie_names:
@@ -241,6 +241,19 @@ def scan_cookies():
 
     return jsonify({"cookies": cookie_data})
 
+
+
+
+if __name__ == "__main__":
+    app.run(debug=True)
+    
+    
+    
+    
+    
+    
+    
+    
 # s = sched.scheduler(time.time, time.sleep)
 # def run_script(sc):
 #     # print("Running scheduled scan...")
@@ -248,8 +261,3 @@ def scan_cookies():
 # if __name__ == "__main__":
 #     s.enter(0, 1, run_script, (s,))
 #     s.run()
-
-
-
-if __name__ == "__main__":
-    app.run(debug=True)
