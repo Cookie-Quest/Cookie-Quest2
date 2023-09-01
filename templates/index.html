@@ -4,6 +4,52 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Cookie Scanner</title>
+  
+  <style>
+    #loadingModal {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0, 0, 0, 0.7);
+      z-index: 9999;
+      justify-content: center;
+      align-items: center;
+    }
+    
+    #loadingContent {
+      text-align: center;
+      background-color: #fff;
+      padding: 20px;
+      border-radius: 10px;
+    }
+
+  /* .loader {
+  width: 100px;
+  height: 101px;
+  border: 8px solid;
+  border-top-color: hsl(154,100%,31%);
+  border-left-color: hsl(216,87%,52%);
+  border-bottom-color: hsl(8,66%,50%);
+  border-right-color: hsl(42,100%,51%);
+  border-radius: 50%;
+  transform: rotate(45deg);
+  margin: 30px auto;
+  animation: loading 2s linear infinite; */
+
+/* } */
+
+
+/* @keyframes loading {
+    0% { transform: translate(-9px, -25px) rotate(0deg); }
+  100% { transform: translate(-9px, -25px) rotate(360deg); }
+} */
+
+  </style>
+  </head>
+  </head>
   <script src="https://cdn.tailwindcss.com"></script>
   <script>
     tailwind.config = {
@@ -24,9 +70,15 @@
     <button
       id="scanButton"
       class="block mx-auto mt-4 bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-xl"
+      onclick="startScanning()"
     >
       Scan Cookies
     </button>
+    <div id="loader" class="loader hidden"></div>
+    <div id="loadingContent">
+      <img src="../public/cookie.gif" />
+      
+    </div>
       <div id="cookieResults" class="mt-4">
         <table class="border-collapse border border-gray-400 w-full">
           <thead class="bg-gray-200">
@@ -45,7 +97,34 @@
           </tbody>
         </table>
       </div>
-    </div>
+
+
+    
+    <script>
+      async function startScanning() {
+        const scanButton = document.getElementById("scanButton");
+        const loadingModal = document.getElementById("loadingModal");
+
+        const originalButtonText = scanButton.textContent;
+        
+        scanButton.textContent = "Scanning...";
+        scanButton.disabled = true; // Disable the button during scanning
+        loadingModal.style.display = "flex"; // Show the modal overlay
+
+        try {
+          const response = await fetch("/scan_cookies");
+          const data = await response.json();
+                    
+          // ... Rest of your code ...
+    
+        } catch (error) {
+          console.error("Error fetching cookie data:", error);
+        } finally {
+          scanButton.textContent = originalButtonText;
+          scanButton.disabled = false; // Re-enable the button after scanning
+        }
+      }
+    </script>
 
     <script>
       document.getElementById("scanButton").addEventListener("click", async function () {
@@ -79,5 +158,7 @@
         }
       });
     </script>
+    <div class="loader"></div>
+  
   </body>
 </html>

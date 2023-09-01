@@ -13,18 +13,36 @@ def format_expiry(expiry_timestamp):
         return expiry_datetime.strftime('%Y-%m-%d %H:%M:%S')
     return "N/A"
 
+
+
 def check_and_report_banner(driver):
-    banner_ids = ["truste-consent-track", "osano-cm-manage osano-cm-buttons__button osano-cm-button osano-co-button --type_manage"]
+    banner_ids = ["truste-consent-track", "osano-cm-manage osano-cm-buttons__button osano-cm-button osano-co-button --type_manage", 
+                  "osano-cm-window__dialog osano-cm-dialog osano-cm-dialog--position_bottom osano-cm-dialog--type_bar"]
+    
+    # class_ids = ["osano-cm-dialog__content osano-cm-content"]
+
     for banner_id in banner_ids:
         try:
             WebDriverWait(driver, 10).until(EC.presence_of_element_located((By.ID, banner_id)))
             consent_banner_div = driver.find_element(By.ID, banner_id)
             buttons = consent_banner_div.find_elements(By.TAG_NAME, "button")
+            div_elements = consent_banner_div.find_elements(By.CSS_SELECTOR, 'osano-cm-dialog__content osano-cm-content')
+
+
+            # class_name = consent_banner_div.find_elements(By.CLASS_NAME, "osano-cm-dialog__content osano-cm-content")
+            
             if buttons:
                 print(f"Consent banner with ID '{banner_id}' is present on the page:")
                 print(f"Number of buttons: {len(buttons)}")
                 for idx, button in enumerate(buttons, start=1):
                     print(f"Button {idx} text: {button.text}")
+
+            if div_elements:
+                print(f"div elements found with banner '{banner_id}':")
+                for idx, div_elements in enumerate(div_elements, start=1):
+                    print(f"Div element {idx} text: {div_elements.text}")
+               
+                
             else:
                 print(f"No buttons found in the consent banner with ID '{banner_id}'.")
             return True
@@ -70,6 +88,19 @@ def main():
     website_urls = [
         'https://ironwoodins.com/',
         'https://www.linqbymarsh.com/linq/auth/login'
+        'https://icip.marshpm.com/FedExWeb/',
+        'https://www.marshmanagement.com/',
+        'https://www.linqbymarsh.com/blueicyber/',
+        'https://services.marshspecialty.com/msp-web/register?division=MSP&client=SF',
+        'https://www.dovetailexchange.com/Account/Login',
+        'https://www.victorinsurance.it/',
+        'https://www.sanint.it/',
+        'https://www.victorinsurance.nl/',
+        'https://www.marshunderwritingsubmissioncenter.com',
+        'https://nordicportal.marsh.com/dk/crm/crm_internet.nsf',
+        'https://victorinsurance.nl/versekeraars/'
+
+
     ]
 
     print("Starting the script")
