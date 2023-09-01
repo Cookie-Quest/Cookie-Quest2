@@ -46,7 +46,14 @@ def calculate_cookie_duration(expiry_timestamp):
         expiry_datetime = datetime.datetime.fromtimestamp(expiry_timestamp)
         current_datetime = datetime.datetime.now()
         duration = expiry_datetime - current_datetime
-        return duration
+
+        hours, remainder = divmod(duration.seconds, 3600)
+        minutes, seconds = divmod(remainder, 60)
+
+        duration_formatted = f"{hours}h {minutes}m {seconds}s"
+        return duration_formatted
+
+    return "Session Cookie (no explicit expiry)"
 
 def check_and_report_banner(driver):
     banner_identifiers = [
@@ -157,12 +164,6 @@ def scan_website(website_url):
             manage_cookies_link = "Yes" if manage_cookies_link_present else "No"
 
 
-        duration = calculate_cookie_duration(expiry_timestamp)
-        if duration is not None:
-            duration_str = str(duration)  # Convert timedelta to string
-            print(f"{Fore.GREEN}Time until expiry: {Style.RESET_ALL}{Fore.CYAN}{duration_str}{Style.RESET_ALL}")
-
-
             print("-----")
             
     # Check for consent banners
@@ -182,6 +183,12 @@ def scan_website(website_url):
         
     except NoSuchElementException:
         print(f"{Fore.RED}{Back.WHITE}No 'Manage Cookies' link found in the footer.{Style.RESET_ALL}")
+        
+        duration = calculate_cookie_duration(expiry_timestamp)
+        if duration is not None:
+            duration_str = str(duration)  # Convert timedelta to string
+            print(f"{Fore.GREEN}Time until expiry: {Style.RESET_ALL}{Fore.CYAN}{duration_str}{Style.RESET_ALL}")
+
             # Adding cookie data to the list
         cookie_data.append({
                 "name": cookie['name'],
@@ -194,7 +201,7 @@ def scan_website(website_url):
                 "provider": provider,
                 "popUpWorking": pop_up_working,
                 "manageCookiesLink": manage_cookies_link,
-                "Duration": duration_str
+                "Duration": duration if duration is not None else "Session Cookie (no explicit expiry)"
                 
             })
 
@@ -215,11 +222,11 @@ def scan_cookies():
         # 'https://www.marsh.com/us/insights/risk-in-context.html', #trustarc
         # 'https://www.victorinsurance.com/us/en.html', # trustarc
         # 'https://www.victorinsurance.it', #osano
-        # 'https://www.victorinsurance.nl',
+         'https://www.victorinsurance.nl',
          'https://icip.marshpm.com/FedExWeb/login.action',
-        # 'https://www.dovetailexchange.com/Account/Login',
-        # 'https://www.marshunderwritingsubmissioncenter.com',
-        # 'https://victorinsurance.nl/verzekeraars'
+         'https://www.dovetailexchange.com/Account/Login',
+         'https://www.marshunderwritingsubmissioncenter.com',
+         'https://victorinsurance.nl/verzekeraars'
     ]
     
     cookie_data = []
