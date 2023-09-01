@@ -1,4 +1,3 @@
-<!DOCTYPE html>
 <html>
 <head>
   <meta charset="UTF-8" />
@@ -66,6 +65,7 @@
 <body class="flex justify-center items-start min-h-screen bg-gray-100">
   <div class="container mt-16">
     <h1 class="text-3xl font-bold text-center text-clifford">Cookie Scanner</h1>
+<<<<<<< HEAD
     <p class="text-center mt-2">Click the button below to start scanning cookies.</p>
     <button
       id="scanButton"
@@ -125,40 +125,93 @@
         }
       }
     </script>
+=======
+    <p class="text-center mt-2">Click the Scan Cookies button below to start scanning cookies.</p>
+    <div class="flex justify-center mt-4">
+      <button
+        id="scanButton"
+        class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-xl"
+      >
+        Scan Cookies
+      </button>
+      <button
+        id="downloadButton"
+        class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-xl ml-4"
+      >
+        Download File
+      </button>
+      <a
+        id="hiddenDownloadLink"
+        style="display: none;"
+        download="cookie_data.xlsx"
+      ></a>
+    </div>
+    
+    <div id="cookieResults" class="mt-4">
+      <table class="border-collapse border border-gray-400 w-full">
+        <thead class="bg-gray-200">
+          <tr class="hover:bg-gray-100">
+            <th class="border border-gray-400 px-4 py-2">Scanned Website</th>
+            <th class="border border-gray-400 px-4 py-2">Cookie Name</th>
+            <th class="border border-gray-400 px-4 py-2">Expires</th>
+            <th class="border border-gray-400 px-4 py-2">Duration</th>
+            <th class="border border-gray-400 px-4 py-2">Secure</th>
+            <th class="border border-gray-400 px-4 py-2">CCM implemented</th>
+            <th class="border border-gray-400 px-4 py-2">Number of buttons</th>
+            <th class="border border-gray-400 px-4 py-2">Consent banner present</th>
+            <th class="border border-gray-400 px-4 py-2">Provider</th>
+            <th class="border border-gray-400 px-4 py-2">Pop up working</th>
+            <th class="border border-gray-400 px-4 py-2">manage cookies link present in the footer</th>
+            
+>>>>>>> 1217596641e8ce81011114fc81a65a4fa3be19c8
 
-    <script>
-      document.getElementById("scanButton").addEventListener("click", async function () {
-        try {
-          const response = await fetch("/scan_cookies");
-          const data = await response.json();
-
-          const cookieTableBody = document.getElementById("cookieTableBody");
-          cookieTableBody.innerHTML = "";
-
-          if (data.cookies && data.cookies.length > 0) {
-            data.cookies.forEach((cookie) => {
-              const cookieRow = `
-                <tr class="hover:bg-gray-100">
-                  <td class="border border-gray-400 px-4 py-2">${cookie.website}</td>
-                  <td class="border border-gray-400 px-4 py-2">${cookie.name}</td>
-                  <td class="border border-gray-400 px-4 py-2">${cookie.domain}</td>
-                  <td class="border border-gray-400 px-4 py-2">${cookie.expiry}</td>
-                  <td class="border border-gray-400 px-4 py-2">${cookie.secure}</td>
-                  </tr>
-                  `;
-                  cookieTableBody.insertAdjacentHTML("beforeend", cookieRow);
-                  //   <td class="border border-gray-400 px-4 py-2">${cookie.value}</td>
-                //   <td class="border border-gray-400 px-4 py-2">${cookie.path}</td>
-            });
-          } else {
-            cookieTableBody.innerHTML = `<tr><td colspan="7" class="border border-gray-400 px-4 py-2 text-center">No cookies found.</td></tr>`;
-          }
-        } catch (error) {
-          console.error("Error fetching cookie data:", error);
-        }
-      });
-    </script>
-    <div class="loader"></div>
+          </tr>
+        </thead>
+        <tbody id="cookieTableBody">
+          <!-- Rows will be dynamically added here -->
+        </tbody>
+      </table>
+    </div>
+  </div>
   
-  </body>
+
+  <script>
+    document.getElementById("scanButton").addEventListener("click", async function () {
+      try {
+        const response = await fetch("/scan_cookies");
+        const data = await response.json();
+    
+        const cookieTableBody = document.getElementById("cookieTableBody");
+        cookieTableBody.innerHTML = "";
+    
+        if (data.cookies && data.cookies.length > 0) {
+          data.cookies.forEach((cookie) => {
+            const cookieRow = `
+              <tr class="hover:bg-gray-100">
+                <td class="border border-gray-400 px-4 py-2">${cookie.domain}</td>
+                <td class="border border-gray-400 px-4 py-2">${cookie.name}</td>
+                <td class="border border-gray-400 px-4 py-2">${cookie.expiry}</td>
+                <td class="border border-gray-400 px-4 py-2">${cookie.duration}</td>
+                <td class="border border-gray-400 px-4 py-2">${cookie.secure}</td>
+                <td class="border border-gray-400 px-4 py-2">${cookie.ccmImplemented}</td>
+                <td class="border border-gray-400 px-4 py-2">${cookie.numButtons}</td>
+                <td class="border border-gray-400 px-4 py-2">${cookie.consentBanner}</td>
+                <td class="border border-gray-400 px-4 py-2">${cookie.provider}</td>
+                <td class="border border-gray-400 px-4 py-2">${cookie.popUpWorking}</td>
+                <td class="border border-gray-400 px-4 py-2">${cookie.manageCookiesLink}</td>
+              </tr>
+            `;
+            cookieTableBody.insertAdjacentHTML("beforeend", cookieRow);
+          });
+        } else {
+          cookieTableBody.innerHTML = `<tr><td colspan="10" class="border border-gray-400 px-4 py-2 text-center">No cookies found.</td></tr>`;
+        }
+      } catch (error) {
+        console.error("Error fetching cookie data:", error);
+      }
+    });
+    
+  </script>
+</body>
 </html>
+
