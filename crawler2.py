@@ -46,7 +46,14 @@ def calculate_cookie_duration(expiry_timestamp):
         expiry_datetime = datetime.datetime.fromtimestamp(expiry_timestamp)
         current_datetime = datetime.datetime.now()
         duration = expiry_datetime - current_datetime
-        return duration
+
+        hours, remainder = divmod(duration.seconds, 3600)
+        minutes, seconds = divmod(remainder, 60)
+
+        duration_formatted = f"{hours}h {minutes}m {seconds}s"
+        return duration_formatted
+
+    return "Session Cookie (no explicit expiry)"
 
 def check_and_report_banner(driver):
     banner_identifiers = [
@@ -82,7 +89,7 @@ def check_and_report_banner(driver):
 
 def check_trustarc(driver):
     html = driver.page_source
-    return "trustarcBanner" in html
+    return "truste" in html
 
 # ... (previous imports and functions)
 
@@ -100,6 +107,9 @@ def scan_website(website_url):
     # Check for the presence of the trustarcBanner keyword
     trustarc_present = check_trustarc(driver)
     osano_present = check_and_report_banner(driver)
+    buttons = []  # Initialize the buttons list here
+    manage_cookies_link_present = False  # Initialize the manage_cookies_link_present variable here
+
 
     if trustarc_present and osano_present:
         print(f"{Fore.GREEN}CCM implemented:{Fore.CYAN} Yes (both TrustArc and Osano){Style.RESET_ALL}")
@@ -126,7 +136,9 @@ def scan_website(website_url):
         'AWSALBCORS',
         'AWSALB',
         'AMCV_7205F0F5559E57A87F000101%40AdobeOrg',
-        'JSESSIONID'
+        'JSESSIONID',
+        'oktaStateToken',
+        'DT'
     ]
 
     cookies = driver.get_cookies()
@@ -140,10 +152,17 @@ def scan_website(website_url):
             expiry_formatted = format_expiry(expiry_timestamp)
             print(f"{Fore.GREEN}Expires: {Style.RESET_ALL}{Fore.CYAN}{expiry_formatted}{Style.RESET_ALL}")
             print(f"{Fore.GREEN}Secure: {Style.RESET_ALL}{Fore.CYAN}{cookie['secure']}{Style.RESET_ALL}")
+                        # Check for consent banners
+            banner_present = check_and_report_banner(driver)
 
-            duration = calculate_cookie_duration(expiry_timestamp)
-            if duration is not None:
-                print(f"{Fore.GREEN}Time until expiry: {Style.RESET_ALL}{Fore.CYAN}{duration}{Style.RESET_ALL}")
+            # Additional information related to CCM implementation
+            ccm_implemented = "Yes" if trustarc_present or osano_present else "No"
+            num_buttons = len(buttons) if banner_present else 0
+            consent_banner = "Yes" if banner_present else "No"
+            provider = "TrustArc" if trustarc_present else "Osano" if osano_present else "None"
+            pop_up_working = "Yes" if trustarc_present or osano_present else "No"
+            manage_cookies_link = "Yes" if manage_cookies_link_present else "No"
+
 
             print("-----")
             
@@ -164,12 +183,26 @@ def scan_website(website_url):
         
     except NoSuchElementException:
         print(f"{Fore.RED}{Back.WHITE}No 'Manage Cookies' link found in the footer.{Style.RESET_ALL}")
+        
+        duration = calculate_cookie_duration(expiry_timestamp)
+        if duration is not None:
+            duration_str = str(duration)  # Convert timedelta to string
+            print(f"{Fore.GREEN}Time until expiry: {Style.RESET_ALL}{Fore.CYAN}{duration_str}{Style.RESET_ALL}")
+
             # Adding cookie data to the list
         cookie_data.append({
                 "name": cookie['name'],
                 "domain": cookie['domain'],
                 "expiry": expiry_formatted,
-                "secure": cookie['secure']
+                "secure": cookie['secure'],
+                "ccmImplemented": ccm_implemented,
+                "numButtons": num_buttons,
+                "consentBanner": consent_banner,
+                "provider": provider,
+                "popUpWorking": pop_up_working,
+                "manageCookiesLink": manage_cookies_link,
+                "Duration": duration if duration is not None else "Session Cookie (no explicit expiry)"
+                
             })
 
     driver.quit()
@@ -183,17 +216,17 @@ def index():
 @app.route('/scan_cookies')
 def scan_cookies():
     website_urls = [
-        'https://ironwoodins.com/',
-        'https://www.linqbymarsh.com/linq/auth/login',
-        'https://icip.marshpm.com/FedExWeb/login.action',
-        'https://www.marsh.com/us/home.html',
-        'https://www.marsh.com/us/insights/risk-in-context.html',
-        'https://www.dovetailexchange.com/Account/Login',
-        'https://www.victorinsurance.com/us/en.html',
-        'https://www.victorinsurance.it',
-        'https://www.victorinsurance.nl',
-        'https://www.marshunderwritingsubmissioncenter.com',
-        'https://victorinsurance.nl/verzekeraars'
+        # 'https://ironwoodins.com/', #osano
+        #  'https://www.linqbymarsh.com/linq/auth/login', #trustarc
+        #  'https://www.marsh.com/us/home.html', #  trustarc
+        # 'https://www.marsh.com/us/insights/risk-in-context.html', #trustarc
+        # 'https://www.victorinsurance.com/us/en.html', # trustarc
+        # 'https://www.victorinsurance.it', #osano
+         'https://www.victorinsurance.nl',
+         'https://icip.marshpm.com/FedExWeb/login.action',
+         'https://www.dovetailexchange.com/Account/Login',
+         'https://www.marshunderwritingsubmissioncenter.com',
+         'https://victorinsurance.nl/verzekeraars'
     ]
     
     cookie_data = []
