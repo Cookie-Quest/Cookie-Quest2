@@ -1,145 +1,59 @@
 <html>
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Cookie Scanner</title>
-  
-  <style>
-    #loadingModal {
-      display: none;
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      background-color: rgba(0, 0, 0, 0.7);
-      z-index: 9999;
-      justify-content: center;
-      align-items: center;
-    }
-    
-    #loadingContent {
-      text-align: center;
-      background-color: #fff;
-      padding: 20px;
-      border-radius: 10px;
-    }
-
-  /* .loader {
-  width: 100px;
-  height: 101px;
-  border: 8px solid;
-  border-top-color: hsl(154,100%,31%);
-  border-left-color: hsl(216,87%,52%);
-  border-bottom-color: hsl(8,66%,50%);
-  border-right-color: hsl(42,100%,51%);
-  border-radius: 50%;
-  transform: rotate(45deg);
-  margin: 30px auto;
-  animation: loading 2s linear infinite; */
-
-/* } */
-
-
-/* @keyframes loading {
-    0% { transform: translate(-9px, -25px) rotate(0deg); }
-  100% { transform: translate(-9px, -25px) rotate(360deg); }
-} */
-
-  </style>
-  </head>
-  </head>
-  <script src="https://cdn.tailwindcss.com"></script>
-  <script>
-    tailwind.config = {
-      theme: {
-        extend: {
-          colors: {
-            clifford: "#1d4ed8",
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Cookie Scanner 🍪</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            colors: {
+              clifford: "#1d4ed8",
+            },
           },
         },
-      },
-    };
-  </script>
-</head>
-<body class="flex justify-center items-start min-h-screen bg-gray-100">
-  <div class="container mt-16">
-    <h1 class="text-3xl font-bold text-center text-clifford">Cookie Scanner</h1>
-<<<<<<< HEAD
-    <p class="text-center mt-2">Click the button below to start scanning cookies.</p>
-    <button
-      id="scanButton"
-      class="block mx-auto mt-4 bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-xl"
-      onclick="startScanning()"
-    >
-      Scan Cookies
-    </button>
-    <div id="loader" class="loader hidden"></div>
-    <div id="loadingContent">
-      <img src="../public/cookie.gif" />
-      
-    </div>
-      <div id="cookieResults" class="mt-4">
-        <table class="border-collapse border border-gray-400 w-full">
-          <thead class="bg-gray-200">
-            <tr class="hover:bg-gray-100">
-              <th class="border border-gray-400 px-4 py-2">Website</th>
-              <th class="border border-gray-400 px-4 py-2">Cookie Name</th>
-              <!-- <th class="border border-gray-400 px-4 py-2">Value</th> -->
-              <th class="border border-gray-400 px-4 py-2">Domain</th>
-              <!-- <th class="border border-gray-400 px-4 py-2">Path</th> -->
-              <th class="border border-gray-400 px-4 py-2">Expires</th>
-              <th class="border border-gray-400 px-4 py-2">Secure</th>
-            </tr>
-          </thead>
-          <tbody id="cookieTableBody">
-            <!-- Rows will be dynamically added here -->
-          </tbody>
-        </table>
+      };
+    </script>
+  </head>
+  <body class="flex justify-center items-start min-h-screen bg-gray-100">
+    <div class="container mt-16">
+      <h1 class="text-3xl font-bold text-center text-clifford">
+        Cookie Scanner 🍪
+      </h1>
+
+      <p class="text-center mt-2">
+        Click the Scan Cookies button below to start scanning cookies.
+      </p>
+      <div class="flex justify-center mt-4">
+        <input
+          id="urlInput"
+          type="text"
+          class="border border-gray-400 px-4 py-2 rounded-l-lg w-full"
+          placeholder="Enter Single URL here"
+        />
+        <button
+          id="addUrlButton"
+          class="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded-l-none rounded-r-lg ml-4"
+        >
+          Add URL
+        </button>
       </div>
 
-
-    
-    <script>
-      async function startScanning() {
-        const scanButton = document.getElementById("scanButton");
-        const loadingModal = document.getElementById("loadingModal");
-
-        const originalButtonText = scanButton.textContent;
-        
-        scanButton.textContent = "Scanning...";
-        scanButton.disabled = true; // Disable the button during scanning
-        loadingModal.style.display = "flex"; // Show the modal overlay
-
-        try {
-          const response = await fetch("/scan_cookies");
-          const data = await response.json();
-                    
-          // ... Rest of your code ...
-    
-        } catch (error) {
-          console.error("Error fetching cookie data:", error);
-        } finally {
-          scanButton.textContent = originalButtonText;
-          scanButton.disabled = false; // Re-enable the button after scanning
-        }
-      }
-    </script>
-=======
-    <p class="text-center mt-2">Click the Scan Cookies button below to start scanning cookies.</p>
-    <div class="flex justify-center mt-4">
-      <button
-        id="scanButton"
-        class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-xl"
-      >
-        Scan Cookies
-      </button>
-      <button
-        id="downloadButton"
-        class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-xl ml-4"
-      >
-        Download File
-        <script>
+      <div class="flex justify-center mt-4">
+        <button
+          id="scanButton"
+          class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-xl"
+        >
+          Scan Cookies
+        </button>
+        <!-- Existing "Download File" button -->
+        <button
+          id="downloadButton"
+          class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-xl ml-4"
+        >
+          Download File
+          <script>
           document.getElementById("downloadButton").addEventListener("click", async function () {
             try {
               const response = await fetch("/download_excel");
@@ -156,53 +70,57 @@
         </script>
         
       </button>
-      <a
-        id="hiddenDownloadLink"
-        style="display: none;"
-        download="Capstone_Excel_report_format.xlsx"
-      ></a>
-    </div>
-    
-    <div id="cookieResults" class="mt-4">
-      <table class="border-collapse border border-gray-400 w-full">
-        <thead class="bg-gray-200">
-          <tr class="hover:bg-gray-100">
-            <th class="border border-gray-400 px-4 py-2">Scanned Website</th>
-            <th class="border border-gray-400 px-4 py-2">Cookie Name</th>
-            <th class="border border-gray-400 px-4 py-2">Expires</th>
-            <th class="border border-gray-400 px-4 py-2">Duration</th>
-            <th class="border border-gray-400 px-4 py-2">Secure</th>
-            <th class="border border-gray-400 px-4 py-2">CCM implemented</th>
-            <th class="border border-gray-400 px-4 py-2">Number of buttons</th>
-            <th class="border border-gray-400 px-4 py-2">Consent banner present</th>
-            <th class="border border-gray-400 px-4 py-2">Provider</th>
-            <th class="border border-gray-400 px-4 py-2">Pop up working</th>
-            <th class="border border-gray-400 px-4 py-2">manage cookies link present in the footer</th>
-            
->>>>>>> 1217596641e8ce81011114fc81a65a4fa3be19c8
+        <a
+          id="hiddenDownloadLink"
+          style="display: none"
+          download="Capstone_Excel_report_format.xlsx"
+        ></a>
+      </div>
 
-          </tr>
-        </thead>
-        <tbody id="cookieTableBody">
-          <!-- Rows will be dynamically added here -->
-        </tbody>
-      </table>
+      <div id="cookieResults" class="mt-4">
+        <table class="border-collapse border border-gray-400 w-full">
+          <thead class="bg-gray-200">
+            <tr class="hover:bg-gray-100">
+              <th class="border border-gray-400 px-4 py-2">Scanned Website</th>
+              <th class="border border-gray-400 px-4 py-2">Cookie Name</th>
+              <th class="border border-gray-400 px-4 py-2">Expires</th>
+              <th class="border border-gray-400 px-4 py-2">Duration</th>
+              <th class="border border-gray-400 px-4 py-2">Secure</th>
+              <th class="border border-gray-400 px-4 py-2">CCM implemented</th>
+              <th class="border border-gray-400 px-4 py-2">
+                Number of buttons
+              </th>
+              <th class="border border-gray-400 px-4 py-2">
+                Consent banner present
+              </th>
+              <th class="border border-gray-400 px-4 py-2">Provider</th>
+              <th class="border border-gray-400 px-4 py-2">Pop up working</th>
+              <th class="border border-gray-400 px-4 py-2">
+                manage cookies link present in the footer
+              </th>
+            </tr>
+          </thead>
+          <tbody id="cookieTableBody">
+            <!-- Rows will be dynamically added here -->
+          </tbody>
+        </table>
+      </div>
     </div>
-  </div>
-  
 
-  <script>
-    document.getElementById("scanButton").addEventListener("click", async function () {
-      try {
-        const response = await fetch("/scan_cookies");
-        const data = await response.json();
-    
-        const cookieTableBody = document.getElementById("cookieTableBody");
-        cookieTableBody.innerHTML = "";
-    
-        if (data.cookies && data.cookies.length > 0) {
-          data.cookies.forEach((cookie) => {
-            const cookieRow = `
+    <script>
+      document
+        .getElementById("scanButton")
+        .addEventListener("click", async function () {
+          try {
+            const response = await fetch("/scan_cookies");
+            const data = await response.json();
+
+            const cookieTableBody = document.getElementById("cookieTableBody");
+            cookieTableBody.innerHTML = "";
+
+            if (data.cookies && data.cookies.length > 0) {
+              data.cookies.forEach((cookie) => {
+                const cookieRow = `
               <tr class="hover:bg-gray-100">
                 <td class="border border-gray-400 px-4 py-2">${cookie.domain}</td>
                 <td class="border border-gray-400 px-4 py-2">${cookie.name}</td>
@@ -217,17 +135,15 @@
                 <td class="border border-gray-400 px-4 py-2">${cookie.manageCookiesLink}</td>
               </tr>
             `;
-            cookieTableBody.insertAdjacentHTML("beforeend", cookieRow);
-          });
-        } else {
-          cookieTableBody.innerHTML = `<tr><td colspan="10" class="border border-gray-400 px-4 py-2 text-center">No cookies found.</td></tr>`;
-        }
-      } catch (error) {
-        console.error("Error fetching cookie data:", error);
-      }
-    });
-    
-  </script>
-</body>
+                cookieTableBody.insertAdjacentHTML("beforeend", cookieRow);
+              });
+            } else {
+              cookieTableBody.innerHTML = `<tr><td colspan="10" class="border border-gray-400 px-4 py-2 text-center">No cookies found.</td></tr>`;
+            }
+          } catch (error) {
+            console.error("Error fetching cookie data:", error);
+          }
+        });
+    </script>
+  </body>
 </html>
-
