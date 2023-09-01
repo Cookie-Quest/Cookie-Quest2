@@ -225,9 +225,9 @@ def scan_cookies():
         # 'https://www.marsh.com/us/insights/risk-in-context.html', #trustarc
         # 'https://www.victorinsurance.com/us/en.html', # trustarc
         # 'https://www.victorinsurance.it', #osano
-         'https://www.victorinsurance.nl',
-         'https://icip.marshpm.com/FedExWeb/login.action',
-         'https://www.dovetailexchange.com/Account/Login',
+        #  'https://www.victorinsurance.nl',
+        #  'https://icip.marshpm.com/FedExWeb/login.action',
+        #  'https://www.dovetailexchange.com/Account/Login',
          'https://www.marshunderwritingsubmissioncenter.com',
          'https://victorinsurance.nl/verzekeraars'
     ]
