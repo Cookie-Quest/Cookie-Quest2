@@ -1,7 +1,7 @@
 beautifulsoup4
 requests
-pandas
-
+Flask
 selenium
-
-pip install openpyx.
+pandas
+selenium
+openpyxl
