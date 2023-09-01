@@ -13,24 +13,8 @@ import pandas as pd
 import datetime, sched
 import time
 
-
-
-init()
-
 app = Flask(__name__)
 
-# csv_file_path = "crawler_csv2"
-# data = {'page title': [], 'Cookie Name': [], 'Domain': [], 'Expires': [], 'Secure': []}
-# printed_info = []
-
-UPLOAD_FOLDER = 'uploads/'
-ALLOWED_EXTENSIONS = {'xlsx'}
-
-app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
-
-# @app.route('/', methods=['GET', 'POST'])
-# def upload_route():
-#     return upload_excel_file()
 
 @app.route('/upload', methods=['GET', 'POST'])
 def upload_file():
@@ -52,10 +36,7 @@ def upload_file():
 
 def allowed_file(filename):
     return '.' in filename and \
-           filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
-
-
-
+           filename.rsplit('.', 1)[1].lower() == 'xlsx'
 
 def format_expiry(expiry_timestamp):
     if expiry_timestamp is not None:
@@ -247,18 +228,13 @@ def scan_website(website_url):
     driver.quit()
 
     return cookie_data
-
-@app.route('/')
-def index():
-    return render_template('index.html')
-
 @app.route('/scan_cookies')
 def scan_cookies():
     excel_file = "uploaded_file.xlsx"
     excel_sheet = "Sheet1"
     column = "Website"
     
-    # Read the websites from the Excel file
+ 
     try:
         df = pd.read_excel(excel_file, sheet_name=excel_sheet)
         if column in df.columns:
@@ -268,16 +244,162 @@ def scan_cookies():
     except Exception as e:
         return jsonify({"error": f"An error occurred: {str(e)}"})
     
-    cookie_data = []
+    cookie_data = []  
 
     for url in website_urls:
-        cookies = scan_website(url)
-        cookie_data.extend(cookies)
+        cookies = scan_website(url)  
+        cookie_data.extend(cookies)  
 
-    return jsonify({"cookies": cookie_data})
+    
+    df_output = pd.DataFrame(cookie_data)
+    df_output.to_excel("output_cookies.xlsx", index=False)  # ***save the data to an Excel file
+    
+    return jsonify({"cookies": cookie_data})  
+
+def scan_website(website_url):
+    chrome_options = Options()
+    chrome_options.add_argument("--headless")
+    service = Service('./driver/chromedriver.exe')
+    driver = webdriver.Chrome(service=service, options=chrome_options)
 
 
+    print(f"{Fore.GREEN}Scanned website:{Style.RESET_ALL}{Fore.CYAN}{website_url}{Style.RESET_ALL}")
+    driver.get(website_url)
+    print(f"{Fore.GREEN}Page title:{Style.RESET_ALL}{Fore.CYAN}{driver.title}{Style.RESET_ALL}")
 
+    # Check for the presence of the trustarcBanner keyword
+    trustarc_present = check_trustarc(driver)
+    osano_present = check_and_report_banner(driver)
+    buttons = []  # Initialize the buttons list here
+    manage_cookies_link_present = False  # Initialize the manage_cookies_link_present variable here
+
+
+    if trustarc_present and osano_present:
+        print(f"{Fore.GREEN}CCM implemented:{Fore.CYAN} Yes (both TrustArc and Osano){Style.RESET_ALL}")
+    elif trustarc_present:
+        print(f"{Fore.GREEN}CCM implemented:{Fore.CYAN} Yes (TrustArc){Style.RESET_ALL}")
+    elif osano_present:
+        print(f"{Fore.GREEN}CCM implemented:{Fore.CYAN} Yes (Osano) {Style.RESET_ALL}")
+    else:
+        print(f"{Fore.GREEN}CCM implemented:{Fore.CYAN} No{Style.RESET_ALL}")
+
+    cookie_names = [
+        'osano_consentmanager',
+        'osano_consentmanager_uuid',
+        'visitor_id395202-hash',
+        's_cc',
+        'notice_behavior',
+        'mbox',
+        'ln_or',
+        'linq_auth_redirect_addr',
+        'at_check',
+        '_gid',
+        '_gcl_au',
+        '_ga',
+        'AWSALBCORS',
+        'AWSALB',
+        'AMCV_7205F0F5559E57A87F000101%40AdobeOrg',
+        'JSESSIONID',
+        'oktaStateToken',
+        'DT'
+    ]
+
+    cookies = driver.get_cookies()
+
+    cookie_data = []  #This will be extracted into a PD DF to export as excel spreadsheet
+
+    for cookie in cookies:
+        if cookie['name'] in cookie_names:
+            print(f"{Fore.GREEN}Cookie Name: {Style.RESET_ALL}{Fore.CYAN}{cookie['name']}{Style.RESET_ALL}")
+            print(f"{Fore.GREEN}Domain: {Style.RESET_ALL}{Fore.CYAN}{cookie['domain']}{Style.RESET_ALL}")
+            expiry_timestamp = get_cookie_expiry(cookie)
+            expiry_formatted = format_expiry(expiry_timestamp)
+            print(f"{Fore.GREEN}Expires: {Style.RESET_ALL}{Fore.CYAN}{expiry_formatted}{Style.RESET_ALL}")
+            print(f"{Fore.GREEN}Secure: {Style.RESET_ALL}{Fore.CYAN}{cookie['secure']}{Style.RESET_ALL}")
+                        # Check for consent banners
+            banner_present = check_and_report_banner(driver)
+
+            # Additional information related to CCM implementation
+            ccm_implemented = "Yes" if trustarc_present or osano_present else "No"
+            num_buttons = len(buttons) if banner_present else 0
+            consent_banner = "Yes" if banner_present else "No"
+            provider = "TrustArc" if trustarc_present else "Osano" if osano_present else "None"
+            pop_up_working = "Yes" if trustarc_present or osano_present else "No"
+            manage_cookies_link = "Yes" if manage_cookies_link_present else "No"
+
+
+            print("-----")
+
+    # Check for consent banners
+    banner_present = check_and_report_banner(driver)
+    if not banner_present:
+        print(f"{Fore.RED}{Back.WHITE}No consent banners found on the page.{Style.RESET_ALL}")
+
+    # Find the "Manage Cookies" link
+    try:
+        manage_cookies_link = driver.find_element(By.PARTIAL_LINK_TEXT, "Manage Cookies")
+        print(f"{Fore.GREEN}{Back.WHITE}Manage Cookies link found in the footer.{Style.RESET_ALL}")
+
+        # Use JavaScript to click the "Manage Cookies" link
+        driver.execute_script("arguments[0].click();", manage_cookies_link)
+        print(f"{Fore.GREEN}{Back.WHITE}Manage Cookies link clicked successfully.{Style.RESET_ALL}")
+        # You can further interact with the pop-up if needed
+
+    except NoSuchElementException:
+        print(f"{Fore.RED}{Back.WHITE}No 'Manage Cookies' link found in the footer.{Style.RESET_ALL}")
+
+        duration = calculate_cookie_duration(expiry_timestamp)
+        if duration is not None:
+            duration_str = str(duration)  # Convert timedelta to string
+            print(f"{Fore.GREEN}Time until expiry: {Style.RESET_ALL}{Fore.CYAN}{duration_str}{Style.RESET_ALL}")
+
+            # Adding cookie data to the list
+        cookie_data.append({
+                "name": cookie['name'],
+                "domain": cookie['domain'],
+                "expiry": expiry_formatted,
+                "secure": cookie['secure'],
+                "ccmImplemented": ccm_implemented,
+                "numButtons": num_buttons,
+                "consentBanner": consent_banner,
+                "provider": provider,
+                "popUpWorking": pop_up_working,
+                "manageCookiesLink": manage_cookies_link,
+                "Duration": duration if duration is not None else "Session Cookie (no explicit expiry)"
+
+            })
+
+    driver.quit()
+
+    return cookie_data  # Return the cookie data
+
+@app.route('/')
+def index():
+    return render_template('index.html')
+
+# @app.route('/scan_cookies')
+# def scan_cookies():
+#     excel_file = "uploaded_file.xlsx"
+#     excel_sheet = "Sheet1"
+#     column = "Website"
+#
+#     # Read the websites from the Excel file
+#     try:
+#         df = pd.read_excel(excel_file, sheet_name=excel_sheet)
+#         if column in df.columns:
+#             website_urls = df[column].tolist()
+#         else:
+#             return jsonify({"error": f"Column '{column}' not found in the Excel file."})
+#     except Exception as e:
+#         return jsonify({"error": f"An error occurred: {str(e)}"})
+#
+#     cookie_data = []
+#
+#     for url in website_urls:
+#         cookies = scan_website(url)
+#         cookie_data.extend(cookies)
+#
+#     return jsonify({"cookies": cookie_data})
 
 if __name__ == "__main__":
     app.run(debug=True)
