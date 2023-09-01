@@ -10,9 +10,7 @@ from colorama import Fore, Style, Back, init
 import datetime
 import time
 
-<<<<<<< HEAD
 
-=======
 init()
 
 app = Flask(__name__)
@@ -20,7 +18,7 @@ app = Flask(__name__)
 # csv_file_path = "crawler_csv2"
 # data = {'page title': [], 'Cookie Name': [], 'Domain': [], 'Expires': [], 'Secure': []}
 # printed_info = []
->>>>>>> 1217596641e8ce81011114fc81a65a4fa3be19c8
+
 
 def format_expiry(expiry_timestamp):
     if expiry_timestamp is not None:
