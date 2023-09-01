@@ -8,7 +8,7 @@ from selenium.webdriver.support import expected_conditions as EC
 from selenium.common.exceptions import TimeoutException, NoSuchElementException
 
 from colorama import Fore, Style, Back, init
-import datetime
+import datetime, sched
 import time
 
 
@@ -241,13 +241,13 @@ def scan_cookies():
 
     return jsonify({"cookies": cookie_data})
 
-s = sched.scheduler(time.time, time.sleep)
-def run_script(sc):
-    # print("Running scheduled scan...")
-    s.enter(150, 1, run_script, (sc,))
-if __name__ == "__main__":
-    s.enter(0, 1, run_script, (s,))
-    s.run()
+# s = sched.scheduler(time.time, time.sleep)
+# def run_script(sc):
+#     # print("Running scheduled scan...")
+#     s.enter(150, 1, run_script, (sc,))
+# if __name__ == "__main__":
+#     s.enter(0, 1, run_script, (s,))
+#     s.run()
 
 
 
