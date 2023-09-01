@@ -1,4 +1,4 @@
-from flask import Flask, render_template, jsonify
+from flask import Flask, render_template, jsonify, request, redirect
 from selenium import webdriver
 from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.chrome.options import Options
@@ -6,8 +6,10 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.common.exceptions import TimeoutException, NoSuchElementException
-
+from excel_reading import excel_reading
+from upload_excel_file import upload_excel_file
 from colorama import Fore, Style, Back, init
+import pandas as pd
 import datetime, sched
 import time
 
@@ -20,6 +22,35 @@ app = Flask(__name__)
 # csv_file_path = "crawler_csv2"
 # data = {'page title': [], 'Cookie Name': [], 'Domain': [], 'Expires': [], 'Secure': []}
 # printed_info = []
+
+UPLOAD_FOLDER = 'uploads/'
+ALLOWED_EXTENSIONS = {'xlsx'}
+
+app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
+
+@app.route('/upload', methods=['GET', 'POST'])
+def upload_file():
+    if request.method == 'POST':
+        file = request.files['file']
+        if file and file.filename.endswith('.xlsx'):
+            file.save("uploaded_file.xlsx")
+            return redirect('/scan_cookies')
+    return '''
+    <!doctype html>
+    <title>Upload an Excel File</title>
+    <h1>Upload an Excel file</h1>
+    <form method=post enctype=multipart/form-data>
+      <input type=file name=file>
+      <input type=submit value=Upload>
+    </form>
+    '''
+
+
+def allowed_file(filename):
+    return '.' in filename and \
+           filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
+
+
 
 
 def format_expiry(expiry_timestamp):
@@ -219,19 +250,19 @@ def index():
 
 @app.route('/scan_cookies')
 def scan_cookies():
-    website_urls = [
-        # 'https://ironwoodins.com/', #osano
-        #  'https://www.linqbymarsh.com/linq/auth/login', #trustarc
-        #  'https://www.marsh.com/us/home.html', #  trustarc
-        # 'https://www.marsh.com/us/insights/risk-in-context.html', #trustarc
-        # 'https://www.victorinsurance.com/us/en.html', # trustarc
-        # 'https://www.victorinsurance.it', #osano
-         'https://www.victorinsurance.nl',
-         'https://icip.marshpm.com/FedExWeb/login.action',
-         'https://www.dovetailexchange.com/Account/Login',
-         'https://www.marshunderwritingsubmissioncenter.com',
-         'https://victorinsurance.nl/verzekeraars'
-    ]
+    excel_file = "uploaded_file.xlsx"
+    excel_sheet = "Sheet1"
+    column = "Website"
+    
+    # Read the websites from the Excel file
+    try:
+        df = pd.read_excel(excel_file, sheet_name=excel_sheet)
+        if column in df.columns:
+            website_urls = df[column].tolist()
+        else:
+            return jsonify({"error": f"Column '{column}' not found in the Excel file."})
+    except Exception as e:
+        return jsonify({"error": f"An error occurred: {str(e)}"})
     
     cookie_data = []
 
