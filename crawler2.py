@@ -8,7 +8,6 @@ from selenium.webdriver.support import expected_conditions as EC
 from selenium.common.exceptions import TimeoutException, NoSuchElementException
 from colorama import Fore, Style, Back, init
 import datetime
-import sched
 import time
 
 init()
@@ -88,35 +87,62 @@ def check_trustarc(driver):
     html = driver.page_source
     return "truste" in html
 
-        # Find the "Manage Cookies" link
-def check_manage_cookies_link(driver):
-        try:
-            # Find the "Manage Cookies" link by searching for its text content
+# def check_manage_cookies_link(driver):
+#         try:
+#             manage_cookies_link_xpath = "//a[contains(translate(., 'ABCDEFGHIJKLMNOPQRSTUVWXYZ', 'abcdefghijklmnopqrstuvwxyz'), 'manage cookies')]"
+
+#             manage_cookies_link = driver.find_element(By.XPATH, manage_cookies_link_xpath)
+
+#             if manage_cookies_link.is_enabled():
+#                 print(f"{Fore.GREEN}{Back.WHITE}Manage Cookies link found and is clickable.{Style.RESET_ALL}")
+#                 driver.execute_script("arguments[0].click();", manage_cookies_link)
+#                 return True
+#             else:
+#                 print(f"{Fore.RED}{Back.WHITE}Manage Cookies link found but is not clickable.{Style.RESET_ALL}")
+
+#         except NoSuchElementException:
+#             print(f"{Fore.RED}{Back.WHITE}No 'Manage Cookies' link found.{Style.RESET_ALL}")
+
+#         return False
+
+def get_footer_details(driver):
+    try:
+        # Replace 'your_footer_xpath' with the actual XPath of your footer element
+        footer_element = driver.find_element(By.XPATH, '/html/body/footer')
+        footer_text = footer_element.text
+
+        # Check if "Manage Cookies" is present in the footer text
+        if "Manage Cookies" in footer_text:
+            print(f"{Fore.GREEN}Footer Details:{Style.RESET_ALL}")
+            print(footer_text)
+            print(f"{Fore.GREEN}Manage Cookies link is present in the footer.{Style.RESET_ALL}")
+
+            # Check if "Manage Cookies" link is clickable
             manage_cookies_link_xpath = "//a[contains(translate(., 'ABCDEFGHIJKLMNOPQRSTUVWXYZ', 'abcdefghijklmnopqrstuvwxyz'), 'manage cookies')]"
+            try:
+                manage_cookies_link = driver.find_element(By.XPATH, manage_cookies_link_xpath)
+                if manage_cookies_link.is_enabled():
+                    print(f"{Fore.GREEN}{Back.WHITE}Manage Cookies link found and is clickable.{Style.RESET_ALL}")
+                    return "Yes"  # Return "Yes" when the link is present and clickable
+                else:
+                    print(f"{Fore.RED}{Back.WHITE}Manage Cookies link found but is not clickable.{Style.RESET_ALL}")
+            except NoSuchElementException:
+                print(f"{Fore.RED}{Back.WHITE}Manage Cookies link not found in the footer.{Style.RESET_ALL}")
 
-            manage_cookies_link = driver.find_element(By.XPATH, manage_cookies_link_xpath)
+        else:
+            print(f"{Fore.RED}Manage Cookies link not found in the footer.{Style.RESET_ALL}")
 
-            # Check if the link is clickable (optional)
-            if manage_cookies_link.is_enabled():
-                print(f"{Fore.GREEN}{Back.WHITE}Manage Cookies link found and is clickable.{Style.RESET_ALL}")
-                # Click the link if needed
-                driver.execute_script("arguments[0].click();", manage_cookies_link)
-                return True
-            else:
-                print(f"{Fore.RED}{Back.WHITE}Manage Cookies link found but is not clickable.{Style.RESET_ALL}")
+    except NoSuchElementException:
+        print(f"{Fore.RED}No footer found on the page.{Style.RESET_ALL}")
 
-        except NoSuchElementException:
-            print(f"{Fore.RED}{Back.WHITE}No 'Manage Cookies' link found.{Style.RESET_ALL}")
+    return "No"  # Return "No" when the link is not found or not clickable
 
-        return False
 
 def scan_website(website_url, banner_identifiers):
     chrome_options = Options()
     chrome_options.add_argument("--headless")
     service = Service('./driver/chromedriver.exe')
     driver = webdriver.Chrome(service=service, options=chrome_options)
-
-    manage_cookies_link_present = check_manage_cookies_link(driver)  # Move this line here
 
     print(f"{Fore.GREEN}Scanned website:{Style.RESET_ALL}{Fore.CYAN}{website_url}{Style.RESET_ALL}")
     driver.get(website_url)
@@ -128,7 +154,9 @@ def scan_website(website_url, banner_identifiers):
     manage_cookies_button = False
     ok_button = False
     button_type = "None"
-    # manage_cookies_link_present = False  # Remove this line since it's already initialized above
+    
+    # Get the status of "Manage Cookies" link from get_footer_details(driver)
+    manage_cookies_link = get_footer_details(driver)
 
     if trustarc_present or osano_present:
         consent_banner_div = None
@@ -153,17 +181,16 @@ def scan_website(website_url, banner_identifiers):
 
                     if "Manage Cookies" in button.text:
                         button_type = "Type1 (Manage Cookies)"
-                        break  # Break out of the loop once "Manage Cookies" is found
+                        break
 
                     if "OK" in button.text or "Okay" in button.text:
                         button_type = "Type1 (Okay)"
-                        break  # Break out of the loop once "OK" or "Okay" is found
+                        break
 
-                    # Check if both "Manage Cookies" and "OK"/"Okay" are present
-                if "Manage Cookies" in button.text and ("OK" in button.text or "Okay" in button.text):
-                    button_type = "Type2 (Both)"
-                else:
-                    print(f"{Fore.RED}No buttons found in the consent banner{Style.RESET_ALL}")
+                    if "Manage Cookies" in button.text and ("OK" in button.text or "Okay" in button.text):
+                        button_type = "Type2 (Both)"
+                    else:
+                        print(f"{Fore.RED}No buttons found in the consent banner{Style.RESET_ALL}")
 
                 break
 
@@ -210,7 +237,6 @@ def scan_website(website_url, banner_identifiers):
             consent_banner = "Yes" if banner_present else "No"
             provider = "TrustArc" if trustarc_present else "Osano" if osano_present else "None"
             pop_up_working = "Yes" if trustarc_present or osano_present else "No"
-            manage_cookies_link = "Yes" if manage_cookies_link_present else "No"
 
             duration = calculate_cookie_duration(expiry_timestamp)
             if duration is not None:
@@ -227,7 +253,7 @@ def scan_website(website_url, banner_identifiers):
                     "provider": provider,
                     "popUpWorking": pop_up_working,
                     "buttonType": button_type,
-                    "manageCookiesLink": manage_cookies_link,
+                    "manageCookiesLink": manage_cookies_link,  # Include "Manage Cookies" link status
                     "Duration": duration if duration is not None else "Session Cookie (no explicit expiry)"
                 })
 
@@ -244,18 +270,7 @@ def scan_cookies():
     
     website_urls = [
         'https://ironwoodins.com/',
-        'https://www.linqbymarsh.com/linq/auth/login'
-        'https://icip.marshpm.com/FedExWeb/',
-        'https://www.marshmanagement.com/',
-        'https://www.linqbymarsh.com/blueicyber/',
-        'https://services.marshspecialty.com/msp-web/register?division=MSP&client=SF',
-        'https://www.dovetailexchange.com/Account/Login',
-        'https://www.victorinsurance.it/',
-        'https://www.sanint.it/',
-        'https://www.victorinsurance.nl/',
-        'https://www.marshunderwritingsubmissioncenter.com',
-        'https://nordicportal.marsh.com/dk/crm/crm_internet.nsf',
-        'https://victorinsurance.nl/versekeraars/'
+        # Add more website URLs as needed
     ]
 
     banner_identifiers = [
@@ -267,7 +282,6 @@ def scan_cookies():
     cookie_data = []
 
     for url in website_urls:
-        
         cookies = scan_website(url, banner_identifiers)
         cookie_data.extend(cookies)
 
