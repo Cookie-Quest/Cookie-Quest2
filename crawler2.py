@@ -114,6 +114,24 @@ def find_element_with_multiple_xpaths(driver, xpaths):
         except NoSuchElementException:
             continue
     return None
+def detect_manage_cookies_link(footer_text):
+    # Define a list of possible translations for "Manage Cookies" in different languages
+    translations = [
+        "Manage Cookies",
+        "Beheer cookies",  # Dutch
+        "Gérer les cookies",  # French
+        "Gestione dei cookie",  # Italian
+        "Gestión de cookies",  # Spanish
+        "Verwalten von Cookies",  # German
+        # Add more translations for other languages as needed
+    ]
+
+    for translation in translations:
+        if translation in footer_text:
+            return translation
+
+    return None  # Return None if no translation is found
+
 
 # Modify the get_footer_details function to use this custom function
 def get_footer_details(driver):
@@ -125,8 +143,9 @@ def get_footer_details(driver):
             '//html/body/app-root',
             '//html/body/div/div/div/div/footer',
             '//html/body/div/div/p/footer',
+            '//html/body/div/div/p/footer',
+            '//html/body',
             '//footer[@class="my-footer"]',
-            
         ]
 
         footer_element = find_element_with_multiple_xpaths(driver, xpaths_to_try)
@@ -134,14 +153,28 @@ def get_footer_details(driver):
         if footer_element:
             footer_text = footer_element.text
 
-            # Check if "Manage Cookies" is present in the footer text
-            if "Manage Cookies" in footer_text:
-                print(f"{Fore.GREEN}Footer Details:{Style.RESET_ALL}")
-                print(footer_text)
-                print(f"{Fore.GREEN}Manage Cookies link is present in the footer.{Style.RESET_ALL}")
+            # Define translations for "Manage Cookies" in various languages
+            translations = [
+                "Manage Cookies",
+                "Beheer cookies",  # Dutch
+                "Gérer les cookies",  # French
+                "Gestione dei cookie",  # Italian
+                "Gestión de cookies",  # Spanish
+                "Verwalten von Cookies",  # German
+                # Add more translations for other languages as needed
+            ]
 
-                # Check if "Manage Cookies" link is clickable
-                manage_cookies_link_xpath = "//a[contains(translate(., 'ABCDEFGHIJKLMNOPQRSTUVWXYZ', 'abcdefghijklmnopqrstuvwxyz'), 'manage cookies')]"
+            # Check if any translation is present in the footer text
+            found_translation = False
+            for translation in translations:
+                if translation.lower() in footer_text.lower():
+                    found_translation = True
+                    print(f"{Fore.GREEN}Manage Cookies link is present in the footer.{Style.RESET_ALL}")
+                    break
+
+            # Check if "Manage Cookies" link is clickable
+            if found_translation:
+                manage_cookies_link_xpath = "//a[contains(translate(., 'ABCDEFGHIJKLMNOPQRSTUVWXYZ', 'abcdefghijklmnopqrstuvwxyz'), 'beheer cookies')]"
                 try:
                     manage_cookies_link = footer_element.find_element(By.XPATH, manage_cookies_link_xpath)
                     if manage_cookies_link.is_enabled():
@@ -162,6 +195,7 @@ def get_footer_details(driver):
         print(f"{Fore.RED}No footer found on the page.{Style.RESET_ALL}")
 
     return "No"  # Return "No" when the link is not found or not clickable
+
 
 
 def scan_website(website_url, banner_identifiers):
@@ -241,7 +275,9 @@ def scan_website(website_url, banner_identifiers):
         'AMCV_7205F0F5559E57A87F000101%40AdobeOrg',
         'JSESSIONID',
         'oktaStateToken',
-        'DT'
+        'DT',
+        'g_state',
+        'G_ENABLED_IDPS'
     ]
 
     cookies = driver.get_cookies()
@@ -300,12 +336,12 @@ def scan_cookies():
         # 'https://icip.marshpm.com/FedExWeb/login.action',
         #'https://www.marsh.com/us/home.html',
          #'https://www.marsh.com/us/insights/risk-in-context.html',
-         'https://www.dovetailexchange.com/Account/Login',
-        # 'https://www.victorinsurance.com/us/en.html',
-        # 'https://www.victorinsurance.it',
-        # 'https://www.victorinsurance.nl',
-        # 'https://www.marshunderwritingsubmissioncenter.com',
-        # 'https://victorinsurance.nl/verzekeraars'        
+         #'https://www.dovetailexchange.com/Account/Login',
+        #'https://www.victorinsurance.com/us/en',
+         #'https://www.victorinsurance.it',
+         #'https://www.victorinsurance.nl',
+         #'https://www.marshunderwritingsubmissioncenter.com',
+         'https://victorinsurance.nl/verzekeraars'        
     ]
 
     banner_identifiers = [
