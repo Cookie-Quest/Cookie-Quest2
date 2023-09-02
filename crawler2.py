@@ -105,32 +105,58 @@ def check_trustarc(driver):
 
 #         return False
 
+# Define a custom function to find an element with multiple XPaths
+def find_element_with_multiple_xpaths(driver, xpaths):
+    for xpath in xpaths:
+        try:
+            element = driver.find_element(By.XPATH, xpath)
+            return element
+        except NoSuchElementException:
+            continue
+    return None
+
+# Modify the get_footer_details function to use this custom function
 def get_footer_details(driver):
     try:
-        # Replace 'your_footer_xpath' with the actual XPath of your footer element
-        footer_element = driver.find_element(By.XPATH, '/html/body/footer')
-        footer_text = footer_element.text
+        # Define multiple possible XPath expressions for the footer element
+        xpaths_to_try = [
+            '//footer[@id="footer"]',
+            '/html/body/footer',
+            '//html/body/app-root',
+            '//html/body/div/div/div/div/footer',
+            '//html/body/div/div/p/footer',
+            '//footer[@class="my-footer"]',
+            
+        ]
 
-        # Check if "Manage Cookies" is present in the footer text
-        if "Manage Cookies" in footer_text:
-            print(f"{Fore.GREEN}Footer Details:{Style.RESET_ALL}")
-            print(footer_text)
-            print(f"{Fore.GREEN}Manage Cookies link is present in the footer.{Style.RESET_ALL}")
+        footer_element = find_element_with_multiple_xpaths(driver, xpaths_to_try)
 
-            # Check if "Manage Cookies" link is clickable
-            manage_cookies_link_xpath = "//a[contains(translate(., 'ABCDEFGHIJKLMNOPQRSTUVWXYZ', 'abcdefghijklmnopqrstuvwxyz'), 'manage cookies')]"
-            try:
-                manage_cookies_link = driver.find_element(By.XPATH, manage_cookies_link_xpath)
-                if manage_cookies_link.is_enabled():
-                    print(f"{Fore.GREEN}{Back.WHITE}Manage Cookies link found and is clickable.{Style.RESET_ALL}")
-                    return "Yes"  # Return "Yes" when the link is present and clickable
-                else:
-                    print(f"{Fore.RED}{Back.WHITE}Manage Cookies link found but is not clickable.{Style.RESET_ALL}")
-            except NoSuchElementException:
-                print(f"{Fore.RED}{Back.WHITE}Manage Cookies link not found in the footer.{Style.RESET_ALL}")
+        if footer_element:
+            footer_text = footer_element.text
+
+            # Check if "Manage Cookies" is present in the footer text
+            if "Manage Cookies" in footer_text:
+                print(f"{Fore.GREEN}Footer Details:{Style.RESET_ALL}")
+                print(footer_text)
+                print(f"{Fore.GREEN}Manage Cookies link is present in the footer.{Style.RESET_ALL}")
+
+                # Check if "Manage Cookies" link is clickable
+                manage_cookies_link_xpath = "//a[contains(translate(., 'ABCDEFGHIJKLMNOPQRSTUVWXYZ', 'abcdefghijklmnopqrstuvwxyz'), 'manage cookies')]"
+                try:
+                    manage_cookies_link = footer_element.find_element(By.XPATH, manage_cookies_link_xpath)
+                    if manage_cookies_link.is_enabled():
+                        print(f"{Fore.GREEN}{Back.WHITE}Manage Cookies link found and is clickable.{Style.RESET_ALL}")
+                        return "Yes"  # Return "Yes" when the link is present and clickable
+                    else:
+                        print(f"{Fore.RED}{Back.WHITE}Manage Cookies link found but is not clickable.{Style.RESET_ALL}")
+                except NoSuchElementException:
+                    print(f"{Fore.RED}{Back.WHITE}Manage Cookies link not found in the footer.{Style.RESET_ALL}")
+
+            else:
+                print(f"{Fore.RED}Manage Cookies link not found in the footer.{Style.RESET_ALL}")
 
         else:
-            print(f"{Fore.RED}Manage Cookies link not found in the footer.{Style.RESET_ALL}")
+            print(f"{Fore.RED}Footer element not found using any of the provided XPath expressions.{Style.RESET_ALL}")
 
     except NoSuchElementException:
         print(f"{Fore.RED}No footer found on the page.{Style.RESET_ALL}")
@@ -269,8 +295,17 @@ def index():
 def scan_cookies():
     
     website_urls = [
-        'https://ironwoodins.com/',
-        # Add more website URLs as needed
+        #'https://ironwoodins.com/',
+        #'https://www.linqbymarsh.com/linq/auth/login',
+        # 'https://icip.marshpm.com/FedExWeb/login.action',
+        #'https://www.marsh.com/us/home.html',
+         #'https://www.marsh.com/us/insights/risk-in-context.html',
+         'https://www.dovetailexchange.com/Account/Login',
+        # 'https://www.victorinsurance.com/us/en.html',
+        # 'https://www.victorinsurance.it',
+        # 'https://www.victorinsurance.nl',
+        # 'https://www.marshunderwritingsubmissioncenter.com',
+        # 'https://victorinsurance.nl/verzekeraars'        
     ]
 
     banner_identifiers = [
