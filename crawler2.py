@@ -6,24 +6,14 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.common.exceptions import TimeoutException, NoSuchElementException
-from langdetect import detect  # Import the language detection library
-
-
 from colorama import Fore, Style, Back, init
 import datetime
 import sched
 import time
 
-
-
 init()
 
 app = Flask(__name__)
-
-# csv_file_path = "crawler_csv2"
-# data = {'page title': [], 'Cookie Name': [], 'Domain': [], 'Expires': [], 'Secure': []}
-# printed_info = []
-
 
 def format_expiry(expiry_timestamp):
     if expiry_timestamp is not None:
@@ -98,59 +88,87 @@ def check_trustarc(driver):
     html = driver.page_source
     return "truste" in html
 
-# ... (previous imports and functions)
+        # Find the "Manage Cookies" link
+def check_manage_cookies_link(driver):
+        try:
+            # Find the "Manage Cookies" link by searching for its text content
+            manage_cookies_link_xpath = "//a[contains(translate(., 'ABCDEFGHIJKLMNOPQRSTUVWXYZ', 'abcdefghijklmnopqrstuvwxyz'), 'manage cookies')]"
 
-def scan_website(website_url):
+            manage_cookies_link = driver.find_element(By.XPATH, manage_cookies_link_xpath)
+
+            # Check if the link is clickable (optional)
+            if manage_cookies_link.is_enabled():
+                print(f"{Fore.GREEN}{Back.WHITE}Manage Cookies link found and is clickable.{Style.RESET_ALL}")
+                # Click the link if needed
+                driver.execute_script("arguments[0].click();", manage_cookies_link)
+                return True
+            else:
+                print(f"{Fore.RED}{Back.WHITE}Manage Cookies link found but is not clickable.{Style.RESET_ALL}")
+
+        except NoSuchElementException:
+            print(f"{Fore.RED}{Back.WHITE}No 'Manage Cookies' link found.{Style.RESET_ALL}")
+
+        return False
+
+def scan_website(website_url, banner_identifiers):
     chrome_options = Options()
     chrome_options.add_argument("--headless")
     service = Service('./driver/chromedriver.exe')
     driver = webdriver.Chrome(service=service, options=chrome_options)
-    
+
+    manage_cookies_link_present = check_manage_cookies_link(driver)  # Move this line here
 
     print(f"{Fore.GREEN}Scanned website:{Style.RESET_ALL}{Fore.CYAN}{website_url}{Style.RESET_ALL}")
     driver.get(website_url)
     print(f"{Fore.GREEN}Page title:{Style.RESET_ALL}{Fore.CYAN}{driver.title}{Style.RESET_ALL}")
 
-    # Check for the presence of the trustarcBanner keyword
     trustarc_present = check_trustarc(driver)
     osano_present = check_and_report_banner(driver)
-    buttons = []  # Initialize the buttons list here
-    manage_cookies_link_present = False  # Initialize the manage_cookies_link_present variable here
 
-
-    if trustarc_present and osano_present:
-        print(f"{Fore.GREEN}CCM implemented:{Fore.CYAN} Yes (both TrustArc and Osano){Style.RESET_ALL}")
-    elif trustarc_present:
-        print(f"{Fore.GREEN}CCM implemented:{Fore.CYAN} Yes (TrustArc){Style.RESET_ALL}")
-    elif osano_present:
-        print(f"{Fore.GREEN}CCM implemented:{Fore.CYAN} Yes (Osano) {Style.RESET_ALL}")
-    else:
-        print(f"{Fore.GREEN}CCM implemented:{Fore.CYAN} No{Style.RESET_ALL}")
-
-    # Initialize button type
-    button_type = "N/A"
     manage_cookies_button = False
     ok_button = False
+    button_type = "None"
+    # manage_cookies_link_present = False  # Remove this line since it's already initialized above
 
     if trustarc_present or osano_present:
-        # If either TrustArc or Osano banners are present
-        if check_and_report_banner(driver):
-            if "Manage Cookies" in driver.page_source:
-                # If "Manage Cookies" button is found
-                manage_cookies_button = True
-            if "OK" or "Okay" in driver.page_source:
-                # If "OK" button is found
-                ok_button = True
+        consent_banner_div = None
 
-    # Determine the button type based on the presence of buttons
-    if manage_cookies_button and ok_button:
-        button_type = "type2 (Both)"
-    elif manage_cookies_button:
-        button_type = "type1 (Manage Cookies)"
-    elif ok_button:
-        button_type = "type1 (OK)"
-    else:
-        button_type = "N/A"
+        for identifier_type, identifier_value in banner_identifiers:
+            try:
+                wait = WebDriverWait(driver, 5)
+
+                if identifier_type == "ID":
+                    wait.until(EC.presence_of_element_located((By.ID, identifier_value)))
+                elif identifier_type == "CLASS_NAME":
+                    wait.until(EC.presence_of_element_located((By.CLASS_NAME, identifier_value)))
+
+                consent_banner_div = driver.find_element(getattr(By, identifier_type), identifier_value)
+                buttons = consent_banner_div.find_elements(By.TAG_NAME, "button")
+                if buttons:
+                    print(f"{Fore.GREEN}Consent banner present on the page:{Style.RESET_ALL}")
+                    print(f"{Fore.GREEN}Number of buttons: {Style.RESET_ALL}{Fore.CYAN}{len(buttons)}{Style.RESET_ALL}")
+
+                for idx, button in enumerate(buttons, start=1):
+                    print(f"{Fore.GREEN}Button {idx} text: {Style.RESET_ALL}{Fore.CYAN}{button.text}{Style.RESET_ALL}")
+
+                    if "Manage Cookies" in button.text:
+                        button_type = "Type1 (Manage Cookies)"
+                        break  # Break out of the loop once "Manage Cookies" is found
+
+                    if "OK" in button.text or "Okay" in button.text:
+                        button_type = "Type1 (Okay)"
+                        break  # Break out of the loop once "OK" or "Okay" is found
+
+                    # Check if both "Manage Cookies" and "OK"/"Okay" are present
+                if "Manage Cookies" in button.text and ("OK" in button.text or "Okay" in button.text):
+                    button_type = "Type2 (Both)"
+                else:
+                    print(f"{Fore.RED}No buttons found in the consent banner{Style.RESET_ALL}")
+
+                break
+
+            except TimeoutException:
+                continue
 
     cookie_names = [
         'osano_consentmanager',
@@ -184,10 +202,9 @@ def scan_website(website_url):
             expiry_formatted = format_expiry(expiry_timestamp)
             print(f"{Fore.GREEN}Expires: {Style.RESET_ALL}{Fore.CYAN}{expiry_formatted}{Style.RESET_ALL}")
             print(f"{Fore.GREEN}Secure: {Style.RESET_ALL}{Fore.CYAN}{cookie['secure']}{Style.RESET_ALL}")
-                        # Check for consent banners
+
             banner_present = check_and_report_banner(driver)
 
-            # Additional information related to CCM implementation
             ccm_implemented = "Yes" if trustarc_present or osano_present else "No"
             num_buttons = len(buttons) if banner_present else 0
             consent_banner = "Yes" if banner_present else "No"
@@ -195,60 +212,24 @@ def scan_website(website_url):
             pop_up_working = "Yes" if trustarc_present or osano_present else "No"
             manage_cookies_link = "Yes" if manage_cookies_link_present else "No"
 
+            duration = calculate_cookie_duration(expiry_timestamp)
+            if duration is not None:
+                duration_str = str(duration)
+                print(f"{Fore.GREEN}Time until expiry: {Style.RESET_ALL}{Fore.CYAN}{duration_str}{Style.RESET_ALL}")
 
-            print("-----")
-            
-    # Check for consent banners
-    banner_present = check_and_report_banner(driver)
-    if not banner_present:
-        print(f"{Fore.RED}{Back.WHITE}No consent banners found on the page.{Style.RESET_ALL}")
-
-    # Find the "Manage Cookies" link
-    try:
-
-       # Find the "Manage Cookies" link within the nested structure
-        outer_div = driver.find_element(By.XPATH, "//footer//div[@class='small-12 medium-12 cell']")
-        manage_cookies_link = outer_div.find_element(By.XPATH, ".//a[contains(text(), 'Manage Cookies')]")
-        # Find the "Manage Cookies" link within the nested structure
-        manage_cookies_link_xpath = (
-            ".//div/div/div/a/font/font[contains(text(), 'Manage Cookies')]"
-        )
-        # Find the "Manage Cookies" link within the nested structure
-        manage_cookies_link = outer_div.find_element(By.XPATH, manage_cookies_link_xpath)
-         
-        # Check if the link is clickable (optional)
-        if manage_cookies_link.is_enabled():
-            print(f"{Fore.GREEN}{Back.WHITE}Manage Cookies link found in the footer and is clickable.{Style.RESET_ALL}")
-        # Click the link if needed
-            driver.execute_script("arguments[0].click();", manage_cookies_link)
-        else:
-            print(f"{Fore.RED}{Back.WHITE}Manage Cookies link found in the footer but is not clickable.{Style.RESET_ALL}")
-
-    except NoSuchElementException:
-        print(f"{Fore.RED}{Back.WHITE}No 'Manage Cookies' link found in the footer.{Style.RESET_ALL}")
-    
-        
-        duration = calculate_cookie_duration(expiry_timestamp)
-        if duration is not None:
-            duration_str = str(duration)  # Convert timedelta to string
-            print(f"{Fore.GREEN}Time until expiry: {Style.RESET_ALL}{Fore.CYAN}{duration_str}{Style.RESET_ALL}")
-
-            # Adding cookie data to the list
-        cookie_data.append({
-                "name": cookie['name'],
-                "domain": cookie['domain'],
-                "expiry": expiry_formatted,
-                "secure": cookie['secure'],
-                "ccmImplemented": ccm_implemented,
-                # "numButtons": num_buttons,
-                "consentBanner": consent_banner,
-                "provider": provider,
-                "popUpWorking": pop_up_working,
-                "buttonType": button_type,  # Add button type here
-                "manageCookiesLink": manage_cookies_link,
-                "Duration": duration if duration is not None else "Session Cookie (no explicit expiry)"
-                
-            })
+                cookie_data.append({
+                    "name": cookie['name'],
+                    "domain": cookie['domain'],
+                    "expiry": expiry_formatted,
+                    "secure": cookie['secure'],
+                    "ccmImplemented": ccm_implemented,
+                    "consentBanner": consent_banner,
+                    "provider": provider,
+                    "popUpWorking": pop_up_working,
+                    "buttonType": button_type,
+                    "manageCookiesLink": manage_cookies_link,
+                    "Duration": duration if duration is not None else "Session Cookie (no explicit expiry)"
+                })
 
     driver.quit()
 
@@ -260,38 +241,37 @@ def index():
 
 @app.route('/scan_cookies')
 def scan_cookies():
-    website_urls = [
-        # 'https://ironwoodins.com/', #osano
-        #  'https://www.linqbymarsh.com/linq/auth/login', #trustarc
-        #  'https://www.marsh.com/us/home.html', #  trustarc
-        # 'https://www.marsh.com/us/insights/risk-in-context.html', #trustarc
-        # 'https://www.victorinsurance.com/us/en.html', # trustarc
-        # 'https://www.victorinsurance.it', #osano
-           'https://www.victorinsurance.nl',
-        #  'https://icip.marshpm.com/FedExWeb/login.action',
-        #  'https://www.dovetailexchange.com/Account/Login',
-        #  'https://www.marshunderwritingsubmissioncenter.com',
-        #  'https://victorinsurance.nl/verzekeraars'
-    ]
     
+    website_urls = [
+        'https://ironwoodins.com/',
+        'https://www.linqbymarsh.com/linq/auth/login'
+        'https://icip.marshpm.com/FedExWeb/',
+        'https://www.marshmanagement.com/',
+        'https://www.linqbymarsh.com/blueicyber/',
+        'https://services.marshspecialty.com/msp-web/register?division=MSP&client=SF',
+        'https://www.dovetailexchange.com/Account/Login',
+        'https://www.victorinsurance.it/',
+        'https://www.sanint.it/',
+        'https://www.victorinsurance.nl/',
+        'https://www.marshunderwritingsubmissioncenter.com',
+        'https://nordicportal.marsh.com/dk/crm/crm_internet.nsf',
+        'https://victorinsurance.nl/versekeraars/'
+    ]
+
+    banner_identifiers = [
+        ("ID", "truste-consent-track"),
+        ("CLASS_NAME", "osano-cm-dialog__buttons"),
+        ("ID", "osano-cm-buttons")
+    ]
+
     cookie_data = []
 
     for url in website_urls:
-        cookies = scan_website(url)
+        
+        cookies = scan_website(url, banner_identifiers)
         cookie_data.extend(cookies)
 
     return jsonify({"cookies": cookie_data})
-
-
-# s = sched.scheduler(time.time, time.sleep)
-# def run_script(sc):
-#     # print("Running scheduled scan...")
-#     s.enter(150, 1, run_script, (sc,))
-# if __name__ == "__main__":
-#     s.enter(0, 1, run_script, (s,))
-#     s.run()
-
-
 
 if __name__ == "__main__":
     app.run(debug=True)
