@@ -110,7 +110,16 @@
     <script>
       document
         .getElementById("scanButton")
-        .addEventListener("click", async function () {
+        function toggleScanButtonText(scanning) {
+          if (scanning) {
+            scanButton.textContent = "Scanning...";
+            scanButton.disabled = true; // Disable the button during scanning
+          } else {
+            scanButton.textContent = "Scan Cookies";
+            scanButton.disabled = false; // Re-enable the button when scanning is done
+          }
+        }
+        scanButton.addEventListener("click", async function () {
           try {
             const response = await fetch("/scan_cookies");
             const data = await response.json();
