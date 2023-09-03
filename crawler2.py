@@ -10,6 +10,7 @@ from colorama import Fore, Style, Back, init
 import datetime, sched
 import time
 import csv
+import pandas as pd 
 
 init()
 
@@ -341,22 +342,10 @@ def scan_cookies():
         #  'https://victorinsurance.nl/verzekeraars, 
         
         #---------Other Websites-------------
-        'https://www.afsretirementedge.com/',
+        #'https://www.afsretirementedge.com/',
          'https://www.aga-us.com/',     
         # 'https://www.afsretirementedge.com/',
         # 'https://afriskservices.co.za'
-
-        # 'https://ironwoodins.com/', #osano
-        #  'https://www.linqbymarsh.com/linq/auth/login', #trustarc
-        #  'https://www.marsh.com/us/home.html', #  trustarc
-        # 'https://www.marsh.com/us/insights/risk-in-context.html', #trustarc
-        # 'https://www.victorinsurance.com/us/en.html', # trustarc
-        # 'https://www.victorinsurance.it', #osano
-        #  'https://www.victorinsurance.nl',
-        #  'https://icip.marshpm.com/FedExWeb/login.action',
-        #  'https://www.dovetailexchange.com/Account/Login',
-        #  'https://www.marshunderwritingsubmissioncenter.com',
-        #  'https://victorinsurance.nl/verzekeraars'
 
     ]
 
@@ -382,12 +371,25 @@ def scan_cookies():
         for cookie in cookie_data:
             writer.writerow(cookie)
 
-    return jsonify({"cookies": cookie_data, "csv_filename": csv_filename})
+    # Read the CSV file into a pandas DataFrame
+    df = pd.read_csv(csv_filename)
 
+    # Convert the DataFrame to an Excel file
+    excel_filename = "cookie_data.xlsx"
+    df.to_excel(excel_filename, index=False)
 
+    return jsonify({"cookies": cookie_data, "csv_filename": csv_filename, "excel_filename": excel_filename})
 
+@app.route('/download_excel')
+def download_excel():
+    try:
+        # Replace with the actual path to your Excel file
+        excel_file_path = "cookie_data.xlsx"
+        return send_file(excel_file_path, as_attachment=True, download_name="cookie_data.xlsx")
+    except Exception as e:
+        return f"An error occurred: {str(e)}"
 
-
+# Your other routes and code
 
 if __name__ == "__main__":
     app.run(debug=True)
@@ -399,17 +401,6 @@ if __name__ == "__main__":
 # if __name__ == "__main__":
 #     s.enter(0, 1, run_script, (s,))
 #     s.run()
-
-
-@app.route('/download_excel')
-def download_excel():
-    try:
-        # Replace with the actual path to your Excel file
-        excel_file_path = "Capstone Excel report format.xls"
-        return send_file(excel_file_path, as_attachment=True)
-    except Exception as e:
-        return f"An error occurred: {str(e)}"
-
 
 
 # @app.route('/download_excel')
