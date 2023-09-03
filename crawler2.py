@@ -10,6 +10,11 @@ from colorama import Fore, Style, Back, init
 import datetime, sched
 import time
 import csv
+# Import website_urls from app.py
+from app import website_urls
+
+# Use website_urls for crawling websites
+
 
 init()
 

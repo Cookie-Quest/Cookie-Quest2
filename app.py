@@ -1,4 +1,4 @@
-from flask import Flask, render_template, jsonify
+from flask import Flask, render_template, jsonify, request
 from selenium import webdriver
 from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.chrome.options import Options
@@ -43,11 +43,26 @@ def check_and_report_banner(driver):
         except TimeoutException:
             pass
     
+
     return banner_info
+
+website_urls = ['https://ironwoodins.com/', 'https://icip.marshpm.com/FedExWeb/login.action']
+
 
 @app.route('/')
 def index():
     return render_template('./index.html')
+
+
+@app.route('/add_website', methods=['POST'])
+def add_website():
+    data = request.get_json()
+    if 'url' in data:
+        new_url = data['url']
+        website_urls.append(new_url)  # Append the new URL to the list
+        return jsonify({"message": "Website added successfully"})
+    else:
+        return jsonify({"error": "URL not provided"}), 400
 
 @app.route('/scan_cookies')
 def scan_cookies():
@@ -56,7 +71,6 @@ def scan_cookies():
     service = Service('./driver/chromedriver.exe')  # Update this path to your chromedriver
     driver = webdriver.Chrome(service=service, options=chrome_options)
 
-    website_urls = ['https://ironwoodins.com/', 'https://icip.marshpm.com/FedExWeb/login.action']
     
     scanned_cookies = []
 
@@ -89,6 +103,11 @@ def scan_cookies():
 
     driver.quit()
     return jsonify({'cookies': scanned_cookies})
+
+
+
+
+    
 
 if __name__ == '__main__':
     app.run()
