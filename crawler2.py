@@ -326,17 +326,23 @@ def index():
 def scan_cookies():
     
     website_urls = [
-        #'https://ironwoodins.com/',
-        'https://www.linqbymarsh.com/linq/auth/login',
+        # 'https://ironwoodins.com/',
+        # 'https://www.linqbymarsh.com/linq/auth/login',
         # 'https://icip.marshpm.com/FedExWeb/login.action',
-        #'https://www.marsh.com/us/home.html',
-         #'https://www.marsh.com/us/insights/risk-in-context.html',
-         #'https://www.dovetailexchange.com/Account/Login',
-        #'https://www.victorinsurance.com/us/en',
-         #'https://www.victorinsurance.it',
-         #'https://www.victorinsurance.nl',
-         #'https://www.marshunderwritingsubmissioncenter.com',
-         #'https://victorinsurance.nl/verzekeraars'        
+        # 'https://www.marsh.com/us/home.html',
+        #  'https://www.marsh.com/us/insights/risk-in-context.html',
+        #  'https://www.dovetailexchange.com/Account/Login',
+        # 'https://www.victorinsurance.com/us/en',
+        #  'https://www.victorinsurance.it',
+        #  'https://www.victorinsurance.nl',
+        #  'https://www.marshunderwritingsubmissioncenter.com',
+        #  'https://victorinsurance.nl/verzekeraars, 
+        
+        #---------Other Websites-------------
+        'https://www.afsretirementedge.com/',
+        # 'https://www.aga-us.com/',     
+        # 'https://www.afsretirementedge.com/',
+        # 'https://afriskservices.co.za'
     ]
 
     banner_identifiers = [
