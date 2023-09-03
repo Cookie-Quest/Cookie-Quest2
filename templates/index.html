@@ -23,7 +23,7 @@
       <h1 class="text-3xl font-bold text-center text-clifford">
         Cookie Scanner 🍪
       </h1>
-      <a href="{{ url_for('download_excel') }}" class="btn btn-primary">Download Excel</a>
+      <!-- <a href="{{ url_for('download_excel') }}" class="btn btn-primary">Download Excel</a> -->
       <p class="text-center mt-2">
         Click the Scan Cookies button below to start scanning cookies.
       </p>
@@ -62,17 +62,19 @@
           Download File
           <script>
           document.getElementById("downloadButton").addEventListener("click", async function () {
-            try {
-              const response = await fetch("/download_excel");
-              const blob = await response.blob();
-              const downloadLink = document.getElementById("hiddenDownloadLink");
-              const url = window.URL.createObjectURL(blob);
-              downloadLink.href = url;
-              downloadLink.click();
-              window.URL.revokeObjectURL(url);
-            } catch (error) {
-              console.error("Error preparing download:", error);
-            }
+
+            window.location.href = "{{ url_for('download_excel') }}";
+            // try {
+            //   const response = await fetch("/download_excel");
+            //   const blob = await response.blob();
+            //   const downloadLink = document.getElementById("hiddenDownloadLink");
+            //   const url = window.URL.createObjectURL(blob);
+            //   downloadLink.href = url;
+            //   downloadLink.click();
+            //   window.URL.revokeObjectURL(url);
+            // } catch (error) {
+            //   console.error("Error preparing download:", error);
+            // }
           });
         </script>
         

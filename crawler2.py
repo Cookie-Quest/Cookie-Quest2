@@ -329,9 +329,9 @@ def scan_cookies():
     
     website_urls = [
 
-         'https://ironwoodins.com/',
+         'https://ironwoodins.com/'
         # 'https://www.linqbymarsh.com/linq/auth/login',
-        # 'https://icip.marshpm.com/FedExWeb/login.action',
+        # 'https://icip.marshpm.com/FedExWeb/login.action'
         # 'https://www.marsh.com/us/home.html',
         #  'https://www.marsh.com/us/insights/risk-in-context.html',
         #  'https://www.dovetailexchange.com/Account/Login',
@@ -343,7 +343,7 @@ def scan_cookies():
         
         #---------Other Websites-------------
         #'https://www.afsretirementedge.com/',
-         'https://www.aga-us.com/',     
+        #  'https://www.aga-us.com/',     
         # 'https://www.afsretirementedge.com/',
         # 'https://afriskservices.co.za'
 
