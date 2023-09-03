@@ -9,6 +9,7 @@ from selenium.common.exceptions import TimeoutException, NoSuchElementException
 from colorama import Fore, Style, Back, init
 import datetime, sched
 import time
+import csv
 
 init()
 
@@ -341,7 +342,7 @@ def scan_cookies():
         
         #---------Other Websites-------------
         'https://www.afsretirementedge.com/',
-        # 'https://www.aga-us.com/',     
+         'https://www.aga-us.com/',     
         # 'https://www.afsretirementedge.com/',
         # 'https://afriskservices.co.za'
 
@@ -354,8 +355,8 @@ def scan_cookies():
         #  'https://www.victorinsurance.nl',
         #  'https://icip.marshpm.com/FedExWeb/login.action',
         #  'https://www.dovetailexchange.com/Account/Login',
-         'https://www.marshunderwritingsubmissioncenter.com',
-         'https://victorinsurance.nl/verzekeraars'
+        #  'https://www.marshunderwritingsubmissioncenter.com',
+        #  'https://victorinsurance.nl/verzekeraars'
 
     ]
 
@@ -371,7 +372,21 @@ def scan_cookies():
         cookies = scan_website(url, banner_identifiers)
         cookie_data.extend(cookies)
 
-    return jsonify({"cookies": cookie_data})
+    # Create a CSV file and write the data
+    csv_filename = "cookie_data.csv"
+    with open(csv_filename, mode='w', newline='') as csv_file:
+        fieldnames = ["name", "domain", "expiry", "secure", "ccmImplemented", "consentBanner", "provider", "popUpWorking", "buttonType", "manageCookiesLink", "Duration"]
+        writer = csv.DictWriter(csv_file, fieldnames=fieldnames)
+
+        writer.writeheader()
+        for cookie in cookie_data:
+            writer.writerow(cookie)
+
+    return jsonify({"cookies": cookie_data, "csv_filename": csv_filename})
+
+
+
+
 
 
 if __name__ == "__main__":
@@ -390,21 +405,20 @@ if __name__ == "__main__":
 def download_excel():
     try:
         # Replace with the actual path to your Excel file
-        excel_file_path = "Capstone Excel report format.xlsx"
+        excel_file_path = "Capstone Excel report format.xls"
         return send_file(excel_file_path, as_attachment=True)
     except Exception as e:
         return f"An error occurred: {str(e)}"
 
 
-@app.route('/download_excel')
-def download_excel():
-    try:
-        # Replace with the actual path to your Excel file
-        excel_file_path = "Capstone Excel report format.xlsx"
-        return send_file(excel_file_path, as_attachment=True)
-    except Exception as e:
-        return f"An error occurred: {str(e)}"
+
+# @app.route('/download_excel')
+# def download_excel():
+#     try:
+#         # Replace with the actual path to your Excel file
+#         excel_file_path = "Capstone Excel report format.xlsx"
+#         return send_file(excel_file_path, as_attachment=True)
+#     except Exception as e:
+#         return f"An error occurred: {str(e)}"
 
 
-if __name__ == "__main__":
-    app.run(debug=True)
