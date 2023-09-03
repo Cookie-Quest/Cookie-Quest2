@@ -28,7 +28,7 @@ git clone https://github.com/Cookie-Quest/Cookie-Quest2.git
 ```
 Navigate to the project directory:
 ```
-cd web-crawler 
+cd Cookie-Quest2 
 ```
 Install required packages:
 ```
