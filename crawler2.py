@@ -276,7 +276,7 @@ def scan_website(website_url, banner_identifiers):
     ]
 
     cookies = driver.get_cookies()
-    cookie_data = []
+    cookie_data = []       #This will be extracted into a PD DF to export as excel spreadsheet
 
     for cookie in cookies:
         if cookie['name'] in cookie_names:
@@ -326,6 +326,7 @@ def index():
 def scan_cookies():
     
     website_urls = [
+
          'https://ironwoodins.com/',
         # 'https://www.linqbymarsh.com/linq/auth/login',
         # 'https://icip.marshpm.com/FedExWeb/login.action',
@@ -343,6 +344,19 @@ def scan_cookies():
         # 'https://www.aga-us.com/',     
         # 'https://www.afsretirementedge.com/',
         # 'https://afriskservices.co.za'
+
+        # 'https://ironwoodins.com/', #osano
+        #  'https://www.linqbymarsh.com/linq/auth/login', #trustarc
+        #  'https://www.marsh.com/us/home.html', #  trustarc
+        # 'https://www.marsh.com/us/insights/risk-in-context.html', #trustarc
+        # 'https://www.victorinsurance.com/us/en.html', # trustarc
+        # 'https://www.victorinsurance.it', #osano
+        #  'https://www.victorinsurance.nl',
+        #  'https://icip.marshpm.com/FedExWeb/login.action',
+        #  'https://www.dovetailexchange.com/Account/Login',
+         'https://www.marshunderwritingsubmissioncenter.com',
+         'https://victorinsurance.nl/verzekeraars'
+
     ]
 
     banner_identifiers = [
@@ -359,6 +373,7 @@ def scan_cookies():
 
     return jsonify({"cookies": cookie_data})
 
+
 if __name__ == "__main__":
     app.run(debug=True)
 
@@ -370,6 +385,15 @@ if __name__ == "__main__":
 #     s.enter(0, 1, run_script, (s,))
 #     s.run()
 
+
+@app.route('/download_excel')
+def download_excel():
+    try:
+        # Replace with the actual path to your Excel file
+        excel_file_path = "Capstone Excel report format.xlsx"
+        return send_file(excel_file_path, as_attachment=True)
+    except Exception as e:
+        return f"An error occurred: {str(e)}"
 
 
 @app.route('/download_excel')
