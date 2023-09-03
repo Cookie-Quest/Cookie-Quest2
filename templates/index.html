@@ -28,15 +28,18 @@
         Click the Scan Cookies button below to start scanning cookies.
       </p>
       <div class="flex justify-center mt-4">
+        
         <input
-          id="urlInput"
+          id="newUrl"
           type="text"
 
           class="border border-gray-400 px-4 py-2 rounded-lg w-1/2"
 
           placeholder="Enter Single URL here"
         />
+ 
         <button
+
           id="addUrlButton"
 
           class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-20-none rounded-lg ml-4"
@@ -152,5 +155,47 @@
           }
         });
     </script>
+
+<script>
+// JavaScript code for adding a website to scan and triggering the scan
+document.getElementById("addUrlButton").addEventListener("click", function () {
+    const newUrl = document.getElementById("newUrl").value;
+
+    // Send the new URL to your Flask app's route for adding websites (in app.py)
+    fetch('/add_website', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ 'url': newUrl })
+    })
+    .then(response => response.json())
+    .then(data => {
+        // Handle the response from the backend if needed
+        console.log(data);
+    });
+
+    // Clear the input field
+    document.getElementById("newUrl").value = "";
+});
+
+// Event listener for the "Scan" button
+document.getElementById("scanButton").addEventListener("click", function () {
+    // Trigger the /scan_cookies request when the "Scan" button is clicked
+    fetch('/scan_cookies', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        // Handle the response from the backend (scan results) if needed
+        console.log(data);
+    });
+});
+
+</script>
+
   </body>
 </html>
