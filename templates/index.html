@@ -93,17 +93,11 @@
               <th class="border border-gray-400 px-4 py-2">Duration</th>
               <th class="border border-gray-400 px-4 py-2">Secure</th>
               <th class="border border-gray-400 px-4 py-2">CCM implemented</th>
-              <th class="border border-gray-400 px-4 py-2">
-                Number of buttons
-              </th>
-              <th class="border border-gray-400 px-4 py-2">
-                Consent banner present
-              </th>
+              <th class="border border-gray-400 px-4 py-2">Button Type</th>
+              <th class="border border-gray-400 px-4 py-2">Consent banner present</th>
               <th class="border border-gray-400 px-4 py-2">Provider</th>
               <th class="border border-gray-400 px-4 py-2">Pop up working</th>
-              <th class="border border-gray-400 px-4 py-2">
-                manage cookies link present in the footer
-              </th>
+              <th class="border border-gray-400 px-4 py-2">manage cookies link present in the footer</th>
             </tr>
           </thead>
           <tbody id="cookieTableBody">
@@ -130,19 +124,19 @@
             if (data.cookies && data.cookies.length > 0) {
               data.cookies.forEach((cookie) => {
                 const cookieRow = `
-              <tr class="hover:bg-gray-100">
-                <td class="border border-gray-400 px-4 py-2">${cookie.domain}</td>
-                <td class="border border-gray-400 px-4 py-2">${cookie.name}</td>
-                <td class="border border-gray-400 px-4 py-2">${cookie.expiry}</td>
-                <td class="border border-gray-400 px-4 py-2">${cookie.duration}</td>
-                <td class="border border-gray-400 px-4 py-2">${cookie.secure}</td>
-                <td class="border border-gray-400 px-4 py-2">${cookie.ccmImplemented}</td>
-                <td class="border border-gray-400 px-4 py-2">${cookie.numButtons}</td>
-                <td class="border border-gray-400 px-4 py-2">${cookie.consentBanner}</td>
-                <td class="border border-gray-400 px-4 py-2">${cookie.provider}</td>
-                <td class="border border-gray-400 px-4 py-2">${cookie.popUpWorking}</td>
-                <td class="border border-gray-400 px-4 py-2">${cookie.manageCookiesLink}</td>
-              </tr>
+                <tr class="hover:bg-gray-100">
+                  <td class="border border-gray-400 px-4 py-2">${cookie.domain}</td>
+                  <td class="border border-gray-400 px-4 py-2">${cookie.name}</td>
+                  <td class="border border-gray-400 px-4 py-2">${cookie.expiry}</td>
+                  <td class="border border-gray-400 px-4 py-2">${cookie.Duration}</td>
+                  <td class="border border-gray-400 px-4 py-2">${cookie.secure}</td>
+                  <td class="border border-gray-400 px-4 py-2">${cookie.ccmImplemented}</td>
+                  <td class="border border-gray-400 px-4 py-2">${cookie.buttonType}</td>
+                  <td class="border border-gray-400 px-4 py-2">${cookie.consentBanner}</td>
+                  <td class="border border-gray-400 px-4 py-2">${cookie.provider}</td>
+                  <td class="border border-gray-400 px-4 py-2">${cookie.popUpWorking}</td>
+                  <td class="border border-gray-400 px-4 py-2">${cookie.manageCookiesLink}</td>
+                </tr>
             `;
               document.getElementById("downloadButton").style.display = "block";
                 cookieTableBody.insertAdjacentHTML("beforeend", cookieRow);
