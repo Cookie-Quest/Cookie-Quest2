@@ -6,8 +6,6 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.common.exceptions import TimeoutException, NoSuchElementException
-from excel_reading import excel_reading
-from upload_excel_file import upload_excel_file
 from colorama import Fore, Style, Back, init
 import pandas as pd
 import datetime, sched
