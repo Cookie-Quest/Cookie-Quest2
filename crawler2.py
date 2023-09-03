@@ -146,6 +146,7 @@ def get_footer_details(driver):
             '//html/body/div/div/p/footer',
             '//html/body',
             '//footer[@class="my-footer"]',
+            '//html/body/app-root/div'
         ]
 
         footer_element = find_element_with_multiple_xpaths(driver, xpaths_to_try)
@@ -169,12 +170,12 @@ def get_footer_details(driver):
             for translation in translations:
                 if translation.lower() in footer_text.lower():
                     found_translation = True
-                    print(f"{Fore.GREEN}Manage Cookies link is present in the footer.{Style.RESET_ALL}")
+                   # print(f"{Fore.GREEN}Manage Cookies link is present in the footer.{Style.RESET_ALL}")
                     break
 
             # Check if "Manage Cookies" link is clickable
             if found_translation:
-                manage_cookies_link_xpath = "//a[contains(translate(., 'ABCDEFGHIJKLMNOPQRSTUVWXYZ', 'abcdefghijklmnopqrstuvwxyz'), 'beheer cookies')]"
+                manage_cookies_link_xpath = "//a[contains(translate(., 'ABCDEFGHIJKLMNOPQRSTUVWXYZ', 'abcdefghijklmnopqrstuvwxyz'), 'manage cookies')]"
                 try:
                     manage_cookies_link = footer_element.find_element(By.XPATH, manage_cookies_link_xpath)
                     if manage_cookies_link.is_enabled():
@@ -214,7 +215,7 @@ def scan_website(website_url, banner_identifiers):
     manage_cookies_button = False
     ok_button = False
     button_type = "None"
-    
+        
     # Get the status of "Manage Cookies" link from get_footer_details(driver)
     manage_cookies_link = get_footer_details(driver)
 
@@ -236,21 +237,15 @@ def scan_website(website_url, banner_identifiers):
                     print(f"{Fore.GREEN}Consent banner present on the page:{Style.RESET_ALL}")
                     print(f"{Fore.GREEN}Number of buttons: {Style.RESET_ALL}{Fore.CYAN}{len(buttons)}{Style.RESET_ALL}")
 
-                for idx, button in enumerate(buttons, start=1):
-                    print(f"{Fore.GREEN}Button {idx} text: {Style.RESET_ALL}{Fore.CYAN}{button.text}{Style.RESET_ALL}")
+                    button_texts = [button.text for button in buttons]
 
-                    if "Manage Cookies" in button.text:
+                    if "Manage Cookies" in button_texts:
                         button_type = "Type1 (Manage Cookies)"
-                        break
-
-                    if "OK" in button.text or "Okay" in button.text:
-                        button_type = "Type1 (Okay)"
-                        break
-
-                    if "Manage Cookies" in button.text and ("OK" in button.text or "Okay" in button.text):
-                        button_type = "Type2 (Both)"
-                    else:
-                        print(f"{Fore.RED}No buttons found in the consent banner{Style.RESET_ALL}")
+                    if "OK" in button_texts or "Okay" in button_texts:
+                        if button_type == "Type1 (Manage Cookies)":
+                            button_type = "Type2 (Both)"
+                        else:
+                            button_type = "Type1 (Okay)"
 
                 break
 
@@ -332,7 +327,7 @@ def scan_cookies():
     
     website_urls = [
         #'https://ironwoodins.com/',
-        #'https://www.linqbymarsh.com/linq/auth/login',
+        'https://www.linqbymarsh.com/linq/auth/login',
         # 'https://icip.marshpm.com/FedExWeb/login.action',
         #'https://www.marsh.com/us/home.html',
          #'https://www.marsh.com/us/insights/risk-in-context.html',
@@ -341,7 +336,7 @@ def scan_cookies():
          #'https://www.victorinsurance.it',
          #'https://www.victorinsurance.nl',
          #'https://www.marshunderwritingsubmissioncenter.com',
-         'https://victorinsurance.nl/verzekeraars'        
+         #'https://victorinsurance.nl/verzekeraars'        
     ]
 
     banner_identifiers = [
