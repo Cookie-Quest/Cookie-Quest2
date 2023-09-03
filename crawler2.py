@@ -13,6 +13,7 @@ from utils.find_element_with_multiple_xpaths import find_element_with_multiple_x
 from utils.detect_manage_cookies_link import detect_manage_cookies_link
 from utils.get_footer_details import get_footer_details
 from utils.scan_website import scan_website
+from utils.perform_scan import  perform_scan
 import requests
 from apscheduler.schedulers.background import BackgroundScheduler
 import datetime, sched
@@ -82,23 +83,9 @@ def download_excel():
 scheduler = BackgroundScheduler(daemon=True)
 scheduler.start()
 
-def perform_scan():
-    try:
-        # Schedule the scan_cookies_route every 150 seconds (2.5 minutes)
-        app.app_context().push()
-        with app.test_request_context():
-            response = requests.get('http://127.0.0.1:5000/scan_cookies')  # Update the port if needed
-            if response.status_code == 200:
-                cookies = response.json()['cookies']
-                # Process the cookies data as needed
-                print(f'Scanned at {time.ctime()} - Cookies: {cookies}')
-            else:
-                print(f"An error occurred: {response.status_code}", response.status_code)
-    except Exception as e:
-        print(f"An error occurred: {str(e)}")
 
 # Add the scan function to the scheduler to run every 150 seconds
-scheduler.add_job(perform_scan, 'interval', seconds=150)  # Adjust the interval as needed
+scheduler.add_job(perform_scan, 'interval', seconds=10)  # Adjust the interval as needed
 
 if __name__ == "__main__":
     app.run(debug=True)

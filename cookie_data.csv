@@ -1,8 +1,8 @@
 name,domain,expiry,secure,ccmImplemented,consentBanner,provider,popUpWorking,buttonType,manageCookiesLink,Duration
-osano_consentmanager,.ironwoodins.com,2024-09-02 17:34:31,True,Yes,Yes,Osano,Yes,Type1 (Manage Cookies),Yes,23h 59m 44s
-osano_consentmanager_uuid,.ironwoodins.com,2024-09-02 17:34:31,True,Yes,Yes,Osano,Yes,Type1 (Manage Cookies),Yes,23h 59m 39s
-AWSALB,www.aga-us.com,2023-09-10 17:35:00,False,Yes,Yes,TrustArc,Yes,Type2 (Both),Yes,23h 59m 58s
-_gid,.aga-us.com,2023-09-04 17:35:00,False,Yes,Yes,TrustArc,Yes,Type2 (Both),Yes,23h 59m 58s
-_ga,.aga-us.com,2024-10-07 17:35:00,False,Yes,Yes,TrustArc,Yes,Type2 (Both),Yes,23h 59m 58s
-AWSALBCORS,www.aga-us.com,2023-09-10 17:35:00,True,Yes,Yes,TrustArc,Yes,Type2 (Both),Yes,23h 59m 58s
+osano_consentmanager,.ironwoodins.com,2024-09-02 18:07:55,True,Yes,Yes,Osano,Yes,Type1 (Manage Cookies),Yes,23h 59m 42s
+osano_consentmanager_uuid,.ironwoodins.com,2024-09-02 18:07:55,True,Yes,Yes,Osano,Yes,Type1 (Manage Cookies),Yes,23h 59m 37s
+AWSALB,www.aga-us.com,2023-09-10 18:08:25,False,Yes,Yes,TrustArc,Yes,Type2 (Both),Yes,23h 59m 58s
+_gid,.aga-us.com,2023-09-04 18:08:25,False,Yes,Yes,TrustArc,Yes,Type2 (Both),Yes,23h 59m 58s
+_ga,.aga-us.com,2024-10-07 18:08:25,False,Yes,Yes,TrustArc,Yes,Type2 (Both),Yes,23h 59m 58s
+AWSALBCORS,www.aga-us.com,2023-09-10 18:08:25,True,Yes,Yes,TrustArc,Yes,Type2 (Both),Yes,23h 59m 58s
 notice_behavior,.aga-us.com,Session Cookie (no explicit expiry),True,Yes,Yes,TrustArc,Yes,Type2 (Both),Yes,Session Cookie (no explicit expiry)
