@@ -1,4 +1,4 @@
-from flask import Flask, render_template, jsonify
+from flask import Flask, render_template, jsonify, send_file
 from selenium import webdriver
 from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.chrome.options import Options
@@ -226,9 +226,9 @@ def scan_cookies():
         # 'https://www.marsh.com/us/insights/risk-in-context.html', #trustarc
         # 'https://www.victorinsurance.com/us/en.html', # trustarc
         # 'https://www.victorinsurance.it', #osano
-         'https://www.victorinsurance.nl',
-         'https://icip.marshpm.com/FedExWeb/login.action',
-         'https://www.dovetailexchange.com/Account/Login',
+        #  'https://www.victorinsurance.nl',
+        #  'https://icip.marshpm.com/FedExWeb/login.action',
+        #  'https://www.dovetailexchange.com/Account/Login',
          'https://www.marshunderwritingsubmissioncenter.com',
          'https://victorinsurance.nl/verzekeraars'
     ]
@@ -261,3 +261,18 @@ if __name__ == "__main__":
 # if __name__ == "__main__":
 #     s.enter(0, 1, run_script, (s,))
 #     s.run()
+
+
+
+@app.route('/download_excel')
+def download_excel():
+    try:
+        # Replace with the actual path to your Excel file
+        excel_file_path = "Capstone Excel report format.xlsx"
+        return send_file(excel_file_path, as_attachment=True)
+    except Exception as e:
+        return f"An error occurred: {str(e)}"
+
+
+if __name__ == "__main__":
+    app.run(debug=True)

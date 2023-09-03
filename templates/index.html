@@ -39,7 +39,7 @@
           id="addUrlButton"
 
           class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-20-none rounded-lg ml-4"
-
+        
         >
           Add URL
         </button>
@@ -56,13 +56,30 @@
         <button
           id="downloadButton"
           class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-xl ml-4"
+          style="display: none;"
         >
           Download File
-        </button>
+          <script>
+          document.getElementById("downloadButton").addEventListener("click", async function () {
+            try {
+              const response = await fetch("/download_excel");
+              const blob = await response.blob();
+              const downloadLink = document.getElementById("hiddenDownloadLink");
+              const url = window.URL.createObjectURL(blob);
+              downloadLink.href = url;
+              downloadLink.click();
+              window.URL.revokeObjectURL(url);
+            } catch (error) {
+              console.error("Error preparing download:", error);
+            }
+          });
+        </script>
+        
+      </button>
         <a
           id="hiddenDownloadLink"
           style="display: none"
-          download="cookie_data.xlsx"
+          download="Capstone_Excel_report_format.xlsx"
         ></a>
       </div>
 
@@ -127,6 +144,7 @@
                 <td class="border border-gray-400 px-4 py-2">${cookie.manageCookiesLink}</td>
               </tr>
             `;
+              document.getElementById("downloadButton").style.display = "block";
                 cookieTableBody.insertAdjacentHTML("beforeend", cookieRow);
               });
             } else {
