@@ -1,4 +1,4 @@
-from flask import Flask, render_template, jsonify
+from flask import Flask, render_template, jsonify, request
 from selenium import webdriver
 from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.chrome.options import Options
@@ -48,6 +48,11 @@ def scan_cookies():
 
     driver.quit()
     return jsonify({'cookies': scanned_cookies})
+
+
+
+
+    
 
 if __name__ == '__main__':
     app.run()
