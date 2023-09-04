@@ -1,4 +1,4 @@
-from flask import Flask, render_template, jsonify, send_file
+from flask import Flask, render_template, jsonify, send_file, request
 from selenium import webdriver
 from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.chrome.options import Options
@@ -14,6 +14,7 @@ from utils.detect_manage_cookies_link import detect_manage_cookies_link
 from utils.get_footer_details import get_footer_details
 from utils.scan_website import scan_website
 from utils.perform_scan import  perform_scan
+from utils.website_manager import add_website_to_scan
 import requests
 from apscheduler.schedulers.background import BackgroundScheduler
 import datetime, sched
@@ -26,17 +27,62 @@ init()
 
 app = Flask(__name__)
 
+# @app.route('/')
+# def index():
+#     return render_template('index.html')
+
+website_urls = []
+
 @app.route('/')
 def index():
     return render_template('index.html')
 
-@app.route('/scan_cookies')
+def add_website_to_scan(website_url):
+    website_urls.append(website_url)
+
+def get_website_list():
+    return website_urls
+
+# @app.route('/')
+# def index():
+#     return render_template('index.html')
+
+@app.route('/add_website', methods=['POST'])
+def add_website():
+    data = request.get_json()
+    if 'url' in data:
+        new_url = data['url']
+        add_website_to_scan(new_url)  # Add the new URL to the list
+        print("Added website:", new_url)  # Print the added website for debugging
+        return jsonify({"message": "Website added successfully"})
+    else:
+        return jsonify({"error": "URL not provided"}), 400
+
+
+@app.route('/scan_cookies', methods=['GET', 'POST'])
 def scan_cookies():
-    website_urls = [
-        'https://ironwoodins.com/',
-        'https://www.aga-us.com/'
-        # Add more website URLs here
+    website_urls = get_website_list()
+    print("Websites to scan:", website_urls)  # Print the list of websites to scan for debugging
+
+    banner_identifiers = [
+        ("ID", "truste-consent-track"),
+        ("CLASS_NAME", "osano-cm-dialog__buttons"),
+        ("ID", "osano-cm-buttons")
+        # Add more banner identifiers if needed
     ]
+
+    cookie_data = []
+
+    for url in website_urls:
+        print("Scanning website:", url)  # Print the currently scanned website for debugging
+        cookies = scan_website(url, banner_identifiers)
+        cookie_data.extend(cookies)
+        
+    # website_urls = [
+    #     # 'https://ironwoodins.com/',
+    #     # 'https://www.aga-us.com/'
+    #     # Add more website URLs here
+    # ]
 
     banner_identifiers = [
         ("ID", "truste-consent-track"),
@@ -85,7 +131,7 @@ scheduler.start()
 
 
 # Add the scan function to the scheduler to run every 150 seconds
-scheduler.add_job(perform_scan, 'interval', seconds=10)  # Adjust the interval as needed
+# scheduler.add_job(perform_scan, 'interval', seconds=10)  # Adjust the interval as needed
 
 if __name__ == "__main__":
     app.run(debug=True)
