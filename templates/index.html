@@ -77,10 +77,10 @@
                     <span class="animate-ping mx-1">.</span>
                 </div>
             </button>
-            <!-- Existing "Download File" button -->
+            <!-- "Download File" button with event listener -->
             <button
                 id="downloadButton"
-                class="bg-blue-500 hover-bg-blue-700 text-white font-bold py-2 px-4 rounded-xl ml-4"
+                class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-xl ml-4"
                 style="display: none;"
             >
                 Download File
@@ -183,6 +183,18 @@
             // Clear the input field
             document.getElementById("newUrl").value = "";
         });
+
+        // JavaScript code for handling the "Download File" button click
+        document
+            .getElementById("downloadButton")
+            .addEventListener("click", async function () {
+                try {
+                    // Trigger the `/download_excel` route to download the Excel file
+                    window.location.href = "/download_excel";
+                } catch (error) {
+                    console.error("Error downloading Excel file:", error);
+                }
+            });
     </script>
 </body>
 </html>

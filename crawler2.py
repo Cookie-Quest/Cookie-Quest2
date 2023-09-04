@@ -14,7 +14,6 @@ from utils.detect_manage_cookies_link import detect_manage_cookies_link
 from utils.get_footer_details import get_footer_details
 from utils.scan_website import scan_website
 from utils.perform_scan import  perform_scan
-from utils.website_manager import add_website_to_scan
 import requests
 from apscheduler.schedulers.background import BackgroundScheduler
 import datetime, sched
@@ -27,10 +26,6 @@ init()
 
 app = Flask(__name__)
 
-# @app.route('/')
-# def index():
-#     return render_template('index.html')
-
 website_urls = []
 
 @app.route('/')
@@ -42,10 +37,6 @@ def add_website_to_scan(website_url):
 
 def get_website_list():
     return website_urls
-
-# @app.route('/')
-# def index():
-#     return render_template('index.html')
 
 @app.route('/add_website', methods=['POST'])
 def add_website():
@@ -121,17 +112,41 @@ def download_excel():
     try:
         # Replace with the actual path to your Excel file
         excel_file_path = "cookie_data.xlsx"
+
+        # Adjust column widths before sending the file
+        from openpyxl import load_workbook
+
+        # Load the Excel file
+        workbook = load_workbook(excel_file_path)
+        sheet = workbook.active
+
+        # Iterate through all columns and adjust their width based on the content
+        for column in sheet.columns:
+            max_length = 0
+            column = [cell for cell in column]
+            for cell in column:
+                try:
+                    if len(str(cell.value)) > max_length:
+                        max_length = len(cell.value)
+                except:
+                    pass
+            adjusted_width = (max_length + 2)
+            sheet.column_dimensions[column[0].column_letter].width = adjusted_width
+
+        # Save the adjusted Excel file
+        workbook.save(excel_file_path)
+
+        # Send the adjusted Excel file as an attachment
         return send_file(excel_file_path, as_attachment=True, download_name="cookie_data.xlsx")
     except Exception as e:
         return f"An error occurred: {str(e)}"
-    
-    
+
+       
 scheduler = BackgroundScheduler(daemon=True)
 scheduler.start()
 
-
 # Add the scan function to the scheduler to run every 150 seconds
-# scheduler.add_job(perform_scan, 'interval', seconds=10)  # Adjust the interval as needed
+scheduler.add_job(perform_scan, 'interval', seconds=3600)  # Adjust the interval as needed
 
 if __name__ == "__main__":
     app.run(debug=True)
