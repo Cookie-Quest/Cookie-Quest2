@@ -1,3 +1,5 @@
 name,domain,expiry,secure,ccmImplemented,consentBanner,provider,popUpWorking,buttonType,manageCookiesLink,Duration
-osano_consentmanager,.ironwoodins.com,2024-09-02 23:26:19,True,Yes,Yes,Osano,Yes,Type1 (Manage Cookies),Yes,23h 59m 44s
-osano_consentmanager_uuid,.ironwoodins.com,2024-09-02 23:26:19,True,Yes,Yes,Osano,Yes,Type1 (Manage Cookies),Yes,23h 59m 39s
+osano_consentmanager,.ironwoodins.com,2024-09-03 14:24:16,True,Yes,Yes,Osano,Yes,Type1 (Manage Cookies),Yes,23h 59m 43s
+osano_consentmanager_uuid,.ironwoodins.com,2024-09-03 14:24:16,True,Yes,Yes,Osano,Yes,Type1 (Manage Cookies),Yes,23h 59m 38s
+osano_consentmanager,.victorinsurance.nl,2024-09-03 14:24:48,True,Yes,Yes,Osano,Yes,Type1 (Manage Cookies),No,23h 59m 44s
+osano_consentmanager_uuid,.victorinsurance.nl,2024-09-03 14:24:48,True,Yes,Yes,Osano,Yes,Type1 (Manage Cookies),No,23h 59m 39s

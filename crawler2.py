@@ -14,6 +14,8 @@ from utils.detect_manage_cookies_link import detect_manage_cookies_link
 from utils.get_footer_details import get_footer_details
 from utils.scan_website import scan_website
 from utils.perform_scan import  perform_scan
+from utils.store_websites_in_excel import store_websites_in_excel
+from utils.send_email import send_email
 import requests
 from apscheduler.schedulers.background import BackgroundScheduler
 import datetime, sched
@@ -26,7 +28,11 @@ init()
 
 app = Flask(__name__)
 
-website_urls = []
+website_urls = [
+         'https://ironwoodins.com/',
+     #     'https://www.aga-us.com/'
+    #     # Add more website URLs here
+       ]
 
 @app.route('/')
 def index():
@@ -45,9 +51,14 @@ def add_website():
         new_url = data['url']
         add_website_to_scan(new_url)  # Add the new URL to the list
         print("Added website:", new_url)  # Print the added website for debugging
-        return jsonify({"message": "Website added successfully"})
+
+        # Store the updated websites list in an Excel sheet
+        excel_filename = store_websites_in_excel(website_urls)
+
+        return jsonify({"message": "Website added successfully", "excel_filename": excel_filename})
     else:
         return jsonify({"error": "URL not provided"}), 400
+
 
 
 @app.route('/scan_cookies', methods=['GET', 'POST'])
@@ -69,11 +80,11 @@ def scan_cookies():
         cookies = scan_website(url, banner_identifiers)
         cookie_data.extend(cookies)
         
-    # website_urls = [
-    #     # 'https://ironwoodins.com/',
-    #     # 'https://www.aga-us.com/'
-    #     # Add more website URLs here
-    # ]
+    #     website_urls = [
+    # #      'https://ironwoodins.com/',
+    #       #'https://www.aga-us.com/'
+    # #     # Add more website URLs here
+    #    ]
 
     banner_identifiers = [
         ("ID", "truste-consent-track"),
@@ -105,7 +116,10 @@ def scan_cookies():
     df.to_excel(excel_filename, index=False)
 
     return jsonify({"cookies": cookie_data, "csv_filename": csv_filename, "excel_filename": excel_filename})
-
+   # After scanning cookies, call the send_email function
+# email_recipient = "samira.test88@gmail.com"  # Replace with the recipient's email address
+# email_attachment = "cookie_data.xlsx"  # Replace with the path to the Excel file you want to attach
+# send_email(email_attachment, email_recipient)
 
 @app.route('/download_excel')
 def download_excel():
@@ -146,16 +160,9 @@ scheduler = BackgroundScheduler(daemon=True)
 scheduler.start()
 
 # Add the scan function to the scheduler to run every 150 seconds
-scheduler.add_job(perform_scan, 'interval', seconds=3600)  # Adjust the interval as needed
+scheduler.add_job(perform_scan, 'interval', days=6)  # Adjust the interval as needed
 
 if __name__ == "__main__":
     app.run(debug=True)
 
-# You can schedule scans here if needed
-# s = sched.scheduler(time.time, time.sleep)
-# def run_script(sc):
-#     # print("Running scheduled scan...")
-#     s.enter(150, 1, run_script, (sc,))
-# if __name__ == "__main__":
-#     s.enter(0, 1, run_script, (s,))
-#     s.run()
+
