@@ -1,4 +1,4 @@
-from flask import Flask, render_template, jsonify, send_file
+from flask import Flask, render_template, jsonify, send_file, request
 from selenium import webdriver
 from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.chrome.options import Options
@@ -6,357 +6,91 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.common.exceptions import TimeoutException, NoSuchElementException
-from colorama import Fore, Style, Back, init
+from utils.format_expiry import format_expiry
+from utils.check_and_report_banner import check_and_report_banner
+from utils.check_trustarc import check_trustarc
+from utils.find_element_with_multiple_xpaths import find_element_with_multiple_xpaths
+from utils.detect_manage_cookies_link import detect_manage_cookies_link
+from utils.get_footer_details import get_footer_details
+from utils.scan_website import scan_website
+from utils.perform_scan import  perform_scan
+from utils.store_websites_in_excel import store_websites_in_excel
+from utils.send_email import send_email
+import requests
+from apscheduler.schedulers.background import BackgroundScheduler
 import datetime, sched
 import time
 import csv
-# Import website_urls from app.py
-
-# Use website_urls for crawling websites
-import pandas as pd 
-
+import pandas as pd
+from colorama import Fore, Style, Back, init
 
 init()
 
 app = Flask(__name__)
 
-def format_expiry(expiry_timestamp):
-    if expiry_timestamp is not None:
-        expiry_datetime = datetime.datetime.fromtimestamp(expiry_timestamp)
-        return expiry_datetime.strftime('%Y-%m-%d %H:%M:%S')
-    return "Session Cookie (no explicit expiry)"
-
-def get_cookie_expiry(cookie):
-    if 'expiry' in cookie:
-        return cookie['expiry']
-    elif 'expires' in cookie:
-        return cookie['expires']
-    elif 'max_age' in cookie:
-        return time.time() + cookie['max_age']
-    elif 'Expires / Max-Age' in cookie:
-        expires_max_age = cookie['Expires / Max-Age']
-        parts = expires_max_age.split('/')
-        if len(parts) == 2:
-            expires_date_str, max_age_str = parts
-            expires_date = datetime.datetime.strptime(expires_date_str.strip(), '%a, %d-%b-%Y %H:%M:%S %Z')
-            max_age = int(max_age_str.strip())
-            return expires_date.timestamp() + max_age
-    return None
-
-def calculate_cookie_duration(expiry_timestamp):
-    if expiry_timestamp is not None:
-        expiry_datetime = datetime.datetime.fromtimestamp(expiry_timestamp)
-        current_datetime = datetime.datetime.now()
-        duration = expiry_datetime - current_datetime
-
-        hours, remainder = divmod(duration.seconds, 3600)
-        minutes, seconds = divmod(remainder, 60)
-
-        duration_formatted = f"{hours}h {minutes}m {seconds}s"
-        return duration_formatted
-
-    return "Session Cookie (no explicit expiry)"
-
-def check_and_report_banner(driver):
-    banner_identifiers = [
-        ("ID", "truste-consent-track"),
-        ("CLASS_NAME", "osano-cm-dialog__buttons"),
-        ("ID", "osano-cm-buttons")  # ID for the second banner
-    ]
-    
-    for identifier_type, identifier_value in banner_identifiers:
-        try:
-            wait = WebDriverWait(driver, 5)  # Reduced waiting time for efficiency
-            
-            if identifier_type == "ID":
-                wait.until(EC.presence_of_element_located((By.ID, identifier_value)))
-            elif identifier_type == "CLASS_NAME":
-                wait.until(EC.presence_of_element_located((By.CLASS_NAME, identifier_value)))
-            
-            consent_banner_div = driver.find_element(getattr(By, identifier_type), identifier_value)
-            buttons = consent_banner_div.find_elements(By.TAG_NAME, "button")
-            if buttons:
-                print(f"{Fore.GREEN}Consent banner present on the page:{Style.RESET_ALL}")
-                print(f"{Fore.GREEN}Number of buttons: {Style.RESET_ALL}{Fore.CYAN}{len(buttons)}{Style.RESET_ALL}")
-                for idx, button in enumerate(buttons, start=1):
-                    print(f"{Fore.GREEN}Button {idx} text: {Style.RESET_ALL}{Fore.CYAN}{button.text}{Style.RESET_ALL}")
-                return True
-            else:
-                print(f"{Fore.RED}No buttons found in the consent banner with {identifier_type} '{identifier_value}'.{Style.RESET_ALL}")
-            
-        except TimeoutException:
-            continue
-
-    return False
-
-def check_trustarc(driver):
-    html = driver.page_source
-    return "truste" in html
-
-# def check_manage_cookies_link(driver):
-#         try:
-#             manage_cookies_link_xpath = "//a[contains(translate(., 'ABCDEFGHIJKLMNOPQRSTUVWXYZ', 'abcdefghijklmnopqrstuvwxyz'), 'manage cookies')]"
-
-#             manage_cookies_link = driver.find_element(By.XPATH, manage_cookies_link_xpath)
-
-#             if manage_cookies_link.is_enabled():
-#                 print(f"{Fore.GREEN}{Back.WHITE}Manage Cookies link found and is clickable.{Style.RESET_ALL}")
-#                 driver.execute_script("arguments[0].click();", manage_cookies_link)
-#                 return True
-#             else:
-#                 print(f"{Fore.RED}{Back.WHITE}Manage Cookies link found but is not clickable.{Style.RESET_ALL}")
-
-#         except NoSuchElementException:
-#             print(f"{Fore.RED}{Back.WHITE}No 'Manage Cookies' link found.{Style.RESET_ALL}")
-
-#         return False
-
-# Define a custom function to find an element with multiple XPaths
-def find_element_with_multiple_xpaths(driver, xpaths):
-    for xpath in xpaths:
-        try:
-            element = driver.find_element(By.XPATH, xpath)
-            return element
-        except NoSuchElementException:
-            continue
-    return None
-def detect_manage_cookies_link(footer_text):
-    # Define a list of possible translations for "Manage Cookies" in different languages
-    translations = [
-        "Manage Cookies",
-        "Beheer cookies",  # Dutch
-        "Gérer les cookies",  # French
-        "Gestione dei cookie",  # Italian
-        "Gestión de cookies",  # Spanish
-        "Verwalten von Cookies",  # German
-        # Add more translations for other languages as needed
-    ]
-
-    for translation in translations:
-        if translation in footer_text:
-            return translation
-
-    return None  # Return None if no translation is found
-
-
-# Modify the get_footer_details function to use this custom function
-def get_footer_details(driver):
-    try:
-        # Define multiple possible XPath expressions for the footer element
-        xpaths_to_try = [
-            '//footer[@id="footer"]',
-            '/html/body/footer',
-            '//html/body/app-root',
-            '//html/body/div/div/div/div/footer',
-            '//html/body/div/div/p/footer',
-            '//html/body/div/div/p/footer',
-            '//html/body',
-            '//footer[@class="my-footer"]',
-            '//html/body/app-root/div'
-        ]
-
-        footer_element = find_element_with_multiple_xpaths(driver, xpaths_to_try)
-
-        if footer_element:
-            footer_text = footer_element.text
-
-            # Define translations for "Manage Cookies" in various languages
-            translations = [
-                "Manage Cookies",
-                "Beheer cookies",  # Dutch
-                "Gérer les cookies",  # French
-                "Gestione dei cookie",  # Italian
-                "Gestión de cookies",  # Spanish
-                "Verwalten von Cookies",  # German
-                # Add more translations for other languages as needed
-            ]
-
-            # Check if any translation is present in the footer text
-            found_translation = False
-            for translation in translations:
-                if translation.lower() in footer_text.lower():
-                    found_translation = True
-                   # print(f"{Fore.GREEN}Manage Cookies link is present in the footer.{Style.RESET_ALL}")
-                    break
-
-            # Check if "Manage Cookies" link is clickable
-            if found_translation:
-                manage_cookies_link_xpath = "//a[contains(translate(., 'ABCDEFGHIJKLMNOPQRSTUVWXYZ', 'abcdefghijklmnopqrstuvwxyz'), 'manage cookies')]"
-                try:
-                    manage_cookies_link = footer_element.find_element(By.XPATH, manage_cookies_link_xpath)
-                    if manage_cookies_link.is_enabled():
-                        print(f"{Fore.GREEN}{Back.WHITE}Manage Cookies link found and is clickable.{Style.RESET_ALL}")
-                        return "Yes"  # Return "Yes" when the link is present and clickable
-                    else:
-                        print(f"{Fore.RED}{Back.WHITE}Manage Cookies link found but is not clickable.{Style.RESET_ALL}")
-                except NoSuchElementException:
-                    print(f"{Fore.RED}{Back.WHITE}Manage Cookies link not found in the footer.{Style.RESET_ALL}")
-
-            else:
-                print(f"{Fore.RED}Manage Cookies link not found in the footer.{Style.RESET_ALL}")
-
-        else:
-            print(f"{Fore.RED}Footer element not found using any of the provided XPath expressions.{Style.RESET_ALL}")
-
-    except NoSuchElementException:
-        print(f"{Fore.RED}No footer found on the page.{Style.RESET_ALL}")
-
-    return "No"  # Return "No" when the link is not found or not clickable
-
-
-
-def scan_website(website_url, banner_identifiers):
-    chrome_options = Options()
-    chrome_options.add_argument("--headless")
-    service = Service('./driver/chromedriver.exe')
-    driver = webdriver.Chrome(service=service, options=chrome_options)
-
-    print(f"{Fore.GREEN}Scanned website:{Style.RESET_ALL}{Fore.CYAN}{website_url}{Style.RESET_ALL}")
-    driver.get(website_url)
-    print(f"{Fore.GREEN}Page title:{Style.RESET_ALL}{Fore.CYAN}{driver.title}{Style.RESET_ALL}")
-
-    trustarc_present = check_trustarc(driver)
-    osano_present = check_and_report_banner(driver)
-
-    manage_cookies_button = False
-    ok_button = False
-    button_type = "None"
-        
-    # Get the status of "Manage Cookies" link from get_footer_details(driver)
-    manage_cookies_link = get_footer_details(driver)
-
-    if trustarc_present or osano_present:
-        consent_banner_div = None
-
-        for identifier_type, identifier_value in banner_identifiers:
-            try:
-                wait = WebDriverWait(driver, 5)
-
-                if identifier_type == "ID":
-                    wait.until(EC.presence_of_element_located((By.ID, identifier_value)))
-                elif identifier_type == "CLASS_NAME":
-                    wait.until(EC.presence_of_element_located((By.CLASS_NAME, identifier_value)))
-
-                consent_banner_div = driver.find_element(getattr(By, identifier_type), identifier_value)
-                buttons = consent_banner_div.find_elements(By.TAG_NAME, "button")
-                if buttons:
-                    print(f"{Fore.GREEN}Consent banner present on the page:{Style.RESET_ALL}")
-                    print(f"{Fore.GREEN}Number of buttons: {Style.RESET_ALL}{Fore.CYAN}{len(buttons)}{Style.RESET_ALL}")
-
-                    button_texts = [button.text for button in buttons]
-
-                    if "Manage Cookies" in button_texts:
-                        button_type = "Type1 (Manage Cookies)"
-                    if "OK" in button_texts or "Okay" in button_texts:
-                        if button_type == "Type1 (Manage Cookies)":
-                            button_type = "Type2 (Both)"
-                        else:
-                            button_type = "Type1 (Okay)"
-
-                break
-
-            except TimeoutException:
-                continue
-
-    cookie_names = [
-        'osano_consentmanager',
-        'osano_consentmanager_uuid',
-        'visitor_id395202-hash',
-        's_cc',
-        'notice_behavior',
-        'mbox',
-        'ln_or',
-        'linq_auth_redirect_addr',
-        'at_check',
-        '_gid',
-        '_gcl_au',
-        '_ga',
-        'AWSALBCORS',
-        'AWSALB',
-        'AMCV_7205F0F5559E57A87F000101%40AdobeOrg',
-        'JSESSIONID',
-        'oktaStateToken',
-        'DT',
-        'g_state',
-        'G_ENABLED_IDPS'
-    ]
-
-    cookies = driver.get_cookies()
-    cookie_data = []       #This will be extracted into a PD DF to export as excel spreadsheet
-
-    for cookie in cookies:
-        if cookie['name'] in cookie_names:
-            print(f"{Fore.GREEN}Cookie Name: {Style.RESET_ALL}{Fore.CYAN}{cookie['name']}{Style.RESET_ALL}")
-            print(f"{Fore.GREEN}Domain: {Style.RESET_ALL}{Fore.CYAN}{cookie['domain']}{Style.RESET_ALL}")
-            expiry_timestamp = get_cookie_expiry(cookie)
-            expiry_formatted = format_expiry(expiry_timestamp)
-            print(f"{Fore.GREEN}Expires: {Style.RESET_ALL}{Fore.CYAN}{expiry_formatted}{Style.RESET_ALL}")
-            print(f"{Fore.GREEN}Secure: {Style.RESET_ALL}{Fore.CYAN}{cookie['secure']}{Style.RESET_ALL}")
-
-            banner_present = check_and_report_banner(driver)
-
-            ccm_implemented = "Yes" if trustarc_present or osano_present else "No"
-            num_buttons = len(buttons) if banner_present else 0
-            consent_banner = "Yes" if banner_present else "No"
-            provider = "TrustArc" if trustarc_present else "Osano" if osano_present else "None"
-            pop_up_working = "Yes" if trustarc_present or osano_present else "No"
-
-            duration = calculate_cookie_duration(expiry_timestamp)
-            if duration is not None:
-                duration_str = str(duration)
-                print(f"{Fore.GREEN}Time until expiry: {Style.RESET_ALL}{Fore.CYAN}{duration_str}{Style.RESET_ALL}")
-
-                cookie_data.append({
-                    "name": cookie['name'],
-                    "domain": cookie['domain'],
-                    "expiry": expiry_formatted,
-                    "secure": cookie['secure'],
-                    "ccmImplemented": ccm_implemented,
-                    "consentBanner": consent_banner,
-                    "provider": provider,
-                    "popUpWorking": pop_up_working,
-                    "buttonType": button_type,
-                    "manageCookiesLink": manage_cookies_link,  # Include "Manage Cookies" link status
-                    "Duration": duration if duration is not None else "Session Cookie (no explicit expiry)"
-                })
-
-    driver.quit()
-
-    return cookie_data
+website_urls = [
+         'https://ironwoodins.com/',
+     #     'https://www.aga-us.com/'
+    #     # Add more website URLs here
+       ]
 
 @app.route('/')
 def index():
     return render_template('index.html')
 
-@app.route('/scan_cookies')
+def add_website_to_scan(website_url):
+    website_urls.append(website_url)
+
+def get_website_list():
+    return website_urls
+
+@app.route('/add_website', methods=['POST'])
+def add_website():
+    data = request.get_json()
+    if 'url' in data:
+        new_url = data['url']
+        add_website_to_scan(new_url)  # Add the new URL to the list
+        print("Added website:", new_url)  # Print the added website for debugging
+
+        # Store the updated websites list in an Excel sheet
+        excel_filename = store_websites_in_excel(website_urls)
+
+        return jsonify({"message": "Website added successfully", "excel_filename": excel_filename})
+    else:
+        return jsonify({"error": "URL not provided"}), 400
+
+
+
+@app.route('/scan_cookies', methods=['GET', 'POST'])
 def scan_cookies():
-    
-    website_urls = [
-
-         'https://ironwoodins.com/'
-        # 'https://www.linqbymarsh.com/linq/auth/login',
-        # 'https://icip.marshpm.com/FedExWeb/login.action'
-        # 'https://www.marsh.com/us/home.html',
-        #  'https://www.marsh.com/us/insights/risk-in-context.html',
-        #  'https://www.dovetailexchange.com/Account/Login',
-        # 'https://www.victorinsurance.com/us/en',
-        #  'https://www.victorinsurance.it',
-        #  'https://www.victorinsurance.nl',
-        #  'https://www.marshunderwritingsubmissioncenter.com',
-        #  'https://victorinsurance.nl/verzekeraars, 
-        
-        #---------Other Websites-------------
-        #'https://www.afsretirementedge.com/',
-        #  'https://www.aga-us.com/',     
-        # 'https://www.afsretirementedge.com/',
-        # 'https://afriskservices.co.za'
-
-    ]
+    website_urls = get_website_list()
+    print("Websites to scan:", website_urls)  # Print the list of websites to scan for debugging
 
     banner_identifiers = [
         ("ID", "truste-consent-track"),
         ("CLASS_NAME", "osano-cm-dialog__buttons"),
         ("ID", "osano-cm-buttons")
+        # Add more banner identifiers if needed
+    ]
+
+    cookie_data = []
+
+    for url in website_urls:
+        print("Scanning website:", url)  # Print the currently scanned website for debugging
+        cookies = scan_website(url, banner_identifiers)
+        cookie_data.extend(cookies)
+        
+    #     website_urls = [
+    # #      'https://ironwoodins.com/',
+    #       #'https://www.aga-us.com/'
+    # #     # Add more website URLs here
+    #    ]
+
+    banner_identifiers = [
+        ("ID", "truste-consent-track"),
+        ("CLASS_NAME", "osano-cm-dialog__buttons"),
+        ("ID", "osano-cm-buttons")
+        # Add more banner identifiers if needed
     ]
 
     cookie_data = []
@@ -370,7 +104,6 @@ def scan_cookies():
     with open(csv_filename, mode='w', newline='') as csv_file:
         fieldnames = ["name", "domain", "expiry", "secure", "ccmImplemented", "consentBanner", "provider", "popUpWorking", "buttonType", "manageCookiesLink", "Duration"]
         writer = csv.DictWriter(csv_file, fieldnames=fieldnames)
-
         writer.writeheader()
         for cookie in cookie_data:
             writer.writerow(cookie)
@@ -383,37 +116,53 @@ def scan_cookies():
     df.to_excel(excel_filename, index=False)
 
     return jsonify({"cookies": cookie_data, "csv_filename": csv_filename, "excel_filename": excel_filename})
+   # After scanning cookies, call the send_email function
+# email_recipient = "samira.test88@gmail.com"  # Replace with the recipient's email address
+# email_attachment = "cookie_data.xlsx"  # Replace with the path to the Excel file you want to attach
+# send_email(email_attachment, email_recipient)
 
 @app.route('/download_excel')
 def download_excel():
     try:
         # Replace with the actual path to your Excel file
         excel_file_path = "cookie_data.xlsx"
+
+        # Adjust column widths before sending the file
+        from openpyxl import load_workbook
+
+        # Load the Excel file
+        workbook = load_workbook(excel_file_path)
+        sheet = workbook.active
+
+        # Iterate through all columns and adjust their width based on the content
+        for column in sheet.columns:
+            max_length = 0
+            column = [cell for cell in column]
+            for cell in column:
+                try:
+                    if len(str(cell.value)) > max_length:
+                        max_length = len(cell.value)
+                except:
+                    pass
+            adjusted_width = (max_length + 2)
+            sheet.column_dimensions[column[0].column_letter].width = adjusted_width
+
+        # Save the adjusted Excel file
+        workbook.save(excel_file_path)
+
+        # Send the adjusted Excel file as an attachment
         return send_file(excel_file_path, as_attachment=True, download_name="cookie_data.xlsx")
     except Exception as e:
         return f"An error occurred: {str(e)}"
 
-# Your other routes and code
+       
+scheduler = BackgroundScheduler(daemon=True)
+scheduler.start()
+
+# Add the scan function to the scheduler to run every 150 seconds
+scheduler.add_job(perform_scan, 'interval', days=6)  # Adjust the interval as needed
 
 if __name__ == "__main__":
     app.run(debug=True)
-
-# s = sched.scheduler(time.time, time.sleep)
-# def run_script(sc):
-#     # print("Running scheduled scan...")
-#     s.enter(150, 1, run_script, (sc,))
-# if __name__ == "__main__":
-#     s.enter(0, 1, run_script, (s,))
-#     s.run()
-
-
-# @app.route('/download_excel')
-# def download_excel():
-#     try:
-#         # Replace with the actual path to your Excel file
-#         excel_file_path = "Capstone Excel report format.xlsx"
-#         return send_file(excel_file_path, as_attachment=True)
-#     except Exception as e:
-#         return f"An error occurred: {str(e)}"
 
 
