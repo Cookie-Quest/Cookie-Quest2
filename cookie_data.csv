@@ -1,5 +1,9 @@
 name,domain,expiry,secure,ccmImplemented,consentBanner,provider,popUpWorking,buttonType,manageCookiesLink,Duration
-osano_consentmanager,.ironwoodins.com,2024-09-03 14:24:16,True,Yes,Yes,Osano,Yes,Type1 (Manage Cookies),Yes,23h 59m 43s
-osano_consentmanager_uuid,.ironwoodins.com,2024-09-03 14:24:16,True,Yes,Yes,Osano,Yes,Type1 (Manage Cookies),Yes,23h 59m 38s
-osano_consentmanager,.victorinsurance.nl,2024-09-03 14:24:48,True,Yes,Yes,Osano,Yes,Type1 (Manage Cookies),No,23h 59m 44s
-osano_consentmanager_uuid,.victorinsurance.nl,2024-09-03 14:24:48,True,Yes,Yes,Osano,Yes,Type1 (Manage Cookies),No,23h 59m 39s
+osano_consentmanager,.ironwoodins.com,2024-09-04 10:12:33,True,Yes,Yes,Osano,Yes,Type1 (Manage Cookies),Yes,12 (month)(s) 4 day(s) 23 hour(s) 59 minute(s) 43 second(s)
+osano_consentmanager_uuid,.ironwoodins.com,2024-09-04 10:12:33,True,Yes,Yes,Osano,Yes,Type1 (Manage Cookies),Yes,12 (month)(s) 4 day(s) 23 hour(s) 59 minute(s) 37 second(s)
+osano_consentmanager,.sanint.it,2024-09-04 10:13:30,True,Yes,Yes,TrustArc,Yes,Type1 (Manage Cookies),No,12 (month)(s) 4 day(s) 23 hour(s) 59 minute(s) 42 second(s)
+osano_consentmanager_uuid,.sanint.it,2024-09-04 10:13:30,True,Yes,Yes,TrustArc,Yes,Type1 (Manage Cookies),No,12 (month)(s) 4 day(s) 23 hour(s) 59 minute(s) 37 second(s)
+osano_consentmanager,.victorinsurance.nl,2024-09-04 10:14:06,True,Yes,Yes,Osano,Yes,Type1 (Manage Cookies),No,12 (month)(s) 4 day(s) 23 hour(s) 59 minute(s) 43 second(s)
+osano_consentmanager_uuid,.victorinsurance.nl,2024-09-04 10:14:06,True,Yes,Yes,Osano,Yes,Type1 (Manage Cookies),No,12 (month)(s) 4 day(s) 23 hour(s) 59 minute(s) 38 second(s)
+JSESSIONID,mmcglobal.okta.com,Session Cookie (no explicit expiry),True,No,No,None,No,None,No,Session Cookie (no explicit expiry)
+DT,mmcglobal.okta.com,2024-10-09 10:14:37,True,No,No,None,No,None,No,1 (month)(s) 4 day(s) 23 hour(s) 59 minute(s) 11 second(s)
