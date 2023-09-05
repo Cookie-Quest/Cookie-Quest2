@@ -1,140 +1,179 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Cookie Scanner 🍪</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    colors: {
-                        clifford: "#1d4ed8",
-                    },
-                },
+      tailwind.config = {
+        theme: {
+          extend: {
+            colors: {
+              clifford: "#1d4ed8",
             },
-        };
+          },
+        },
+      };
     </script>
     <style>
-        /* Add custom CSS for the loading indicator */
-        #scanButton {
-            position: relative;
-        }
+      /* Add custom CSS for the loading indicator */
+      #scanButton {
+        position: relative;
+      }
 
-        #scanLoading {
-            position: absolute;
-            inset: 0;
-            display: none;
-            background-color: rgba(29, 78, 216, 0.9);
-            color: white;
-            border-radius: 0.375rem;
-        }
+      #scanLoading {
+        position: absolute;
+        inset: 0;
+        display: none;
+        background-color: rgba(29, 78, 216, 0.9);
+        color: white;
+        border-radius: 0.375rem;
+      }
 
-        #scanLoading span {
-            animation: ping 1s infinite;
-        }
+      #scanLoading span {
+        animation: ping 1s infinite;
+      }
 
-        @keyframes ping {
-            0%, 100% {
-                opacity: 0;
-            }
-            50% {
-                opacity: 1;
-            }
+      @keyframes ping {
+        0%, 100% {
+          opacity: 0;
         }
+        50% {
+          opacity: 1;
+        }
+      }
     </style>
-</head>
-<body class="flex justify-center items-start min-h-screen bg-gray-100">
+  </head>
+  <body class="flex justify-center items-start min-h-screen bg-gray-100">
     <div class="container mt-16">
-        <h1 class="text-3xl font-bold text-center text-clifford">Cookie Scanner 🍪</h1>
-        <p class="text-center mt-2">Click the Scan Cookies button below to start scanning cookies.</p>
-        <div class="flex justify-center mt-4">
-            <input
-                id="newUrl"
-                type="text"
-                class="border border-gray-400 px-4 py-2 rounded-lg w-1/2"
-                placeholder="Enter Single URL here"
-            />
-            <button
-                id="addUrlButton"
-                class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-20-none rounded-lg ml-4"
-            >
-                Add URL
-            </button>
-        </div>
-        <div class="flex justify-center mt-4">
-            <!-- The button contains the loading indicator -->
-            <button
-                id="scanButton"
-                class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-xl"
-            >
-                Scan Cookies
-                <!-- Loading indicator with three dots -->
-                <div id="scanLoading" class="absolute flex items-center justify-center w-full h-full">
-                    <span class="animate-ping mx-1">.</span>
-                    <span class="animate-ping mx-1">.</span>
-                    <span class="animate-ping mx-1">.</span>
-                </div>
-            </button>
-            <!-- "Download File" button with event listener -->
-            <button
-                id="downloadButton"
-                class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-xl ml-4"
-                style="display: none;"
-            >
-                Download File
-            </button>
-            <a
-                id="hiddenDownloadLink"
-                style="display: none"
-                download="Capstone Excel report format.xlsx"
-            ></a>
-        </div>
-        <div id="cookieResults" class="mt-4">
-            <table class="border-collapse border border-gray-400 w-full">
-                <thead class="bg-gray-200">
-                    <tr class="hover:bg-gray-100">
-                        <th class="border border-gray-400 px-4 py-2">Scanned Website</th>
-                        <th class="border border-gray-400 px-4 py-2">Cookie Name</th>
-                        <th class="border border-gray-400 px-4 py-2">Expires</th>
-                        <th class="border border-gray-400 px-4 py-2">Duration</th>
-                        <th class="border border-gray-400 px-4 py-2">Secure</th>
-                        <th class="border border-gray-400 px-4 py-2">CCM implemented</th>
-                        <th class="border border-gray-400 px-4 py-2">Button Type</th>
-                        <th class="border border-gray-400 px-4 py-2">Consent banner present</th>
-                        <th class="border border-gray-400 px-4 py-2">Provider</th>
-                        <th class="border border-gray-400 px-4 py-2">Pop up working</th>
-                        <th class="border border-gray-400 px-4 py-2">manage cookies link present in the footer</th>
-                    </tr>
-                </thead>
-                <tbody id="cookieTableBody">
-                    <!-- Rows will be dynamically added here -->
-                </tbody>
-            </table>
-        </div>
+      <h1 class="text-3xl font-bold text-center text-clifford">
+        Cookie Scanner 🍪
+      </h1>
+      <p class="text-center mt-2">
+        Click the Scan Cookies button below to start scanning cookies.
+      </p>
+      <div class="flex justify-center mt-4">
+        <input
+          id="newUrl"
+          type="text"
+          class="border border-gray-400 px-4 py-2 rounded-lg w-1/2"
+          placeholder="Enter Single URL here"
+        />
+        <button
+          id="addUrlButton"
+          class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-20-none rounded-lg ml-4"
+        >
+          Add URL
+        </button>
+      </div>
+      <div class="flex justify-center mt-4">
+        <!-- The button contains the loading indicator -->
+        <button
+          id="scanButton"
+          class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-xl"
+        >
+          Scan Cookies
+          <!-- Loading indicator with three dots -->
+          <div
+            id="scanLoading"
+            class="absolute flex items-center justify-center w-full h-full"
+          >
+            <span class="animate-ping mx-1">.</span>
+            <span class="animate-ping mx-1">.</span>
+            <span class="animate-ping mx-1">.</span>
+          </div>
+        </button>
+        <!-- "Download File" button with event listener -->
+        <button
+          id="downloadButton"
+          class="bg-blue-500 hover.bg-blue-700 text-white font-bold py-2 px-4 rounded-xl ml-4"
+          style="display: none"
+        >
+          Download File
+        </button>
+        <a
+          id="hiddenDownloadLink"
+          style="display: none"
+          download="Capstone Excel report format.xlsx"
+        ></a>
+      </div>
+
+      <!-- Add this HTML code within your <div class="flex justify-center mt-4"> element -->
+      <div class="flex justify-center mt-4">
+        <input
+          type="file"
+          id="fileInput"
+          accept=".xlsx"
+          style="display: none;"
+        /> <!-- Hide the file input initially -->
+        <label
+          for="fileInput"
+          class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-xl cursor-pointer"
+        >
+          Choose File
+        </label>
+        <p
+          id="selectedFileName"
+          style="display: none; padding: 0.5rem;"
+        ></p> <!-- Element to display the selected file's name -->
+        <button
+          id="uploadButton"
+          class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-xl"
+          style="display: none;"
+        >
+          Upload
+        </button>
+      </div>
+
+      <div id="cookieResults" class="mt-4">
+        <table class="border-collapse border border-gray-400 w-full">
+          <thead class="bg-gray-200">
+            <tr class="hover:bg-gray-100">
+              <th class="border border-gray-400 px-4 py-2">Scanned Website</th>
+              <th class="border border-gray-400 px-4 py-2">Cookie Name</th>
+              <th class="border border-gray-400 px-4 py-2">Expires</th>
+              <th class="border border-gray-400 px-4 py-2">Duration</th>
+              <th class="border border-gray-400 px-4 py-2">Secure</th>
+              <th class="border border-gray-400 px-4 py-2">CCM implemented</th>
+              <th class="border border-gray-400 px-4 py-2">Button Type</th>
+              <th class="border border-gray-400 px-4 py-2">
+                Consent banner present
+              </th>
+              <th class="border border-gray-400 px-4 py-2">Provider</th>
+              <th class="border border-gray-400 px-4 py-2">Pop up working</th>
+              <th class="border border-gray-400 px-4 py-2">
+                manage cookies link present in the footer
+              </th>
+            </tr>
+          </thead>
+          <tbody id="cookieTableBody">
+            <!-- Rows will be dynamically added here -->
+          </tbody>
+        </table>
+      </div>
     </div>
 
     <script>
-        document
-            .getElementById("scanButton")
-            .addEventListener("click", async function () {
-                try {
-                    const scanButton = document.getElementById("scanButton");
-                    const scanLoading = document.getElementById("scanLoading");
+      document
+        .getElementById("scanButton")
+        .addEventListener("click", async function () {
+          try {
+            const scanButton = document.getElementById("scanButton");
+            const scanLoading = document.getElementById("scanLoading");
 
-                    scanButton.classList.add("relative"); // Make the button relative for absolute positioning
-                    scanLoading.style.display = "flex"; // Show loading indicator
+            scanButton.classList.add("relative"); // Make the button relative for absolute positioning
+            scanLoading.style.display = "flex"; // Show loading indicator
 
-                    const response = await fetch("/scan_cookies");
-                    const data = await response.json();
+            const response = await fetch("/scan_cookies");
+            const data = await response.json();
 
-                    const cookieTableBody = document.getElementById("cookieTableBody");
-                    cookieTableBody.innerHTML = "";
+            const cookieTableBody = document.getElementById("cookieTableBody");
+            cookieTableBody.innerHTML = "";
 
-                    if (data.cookies && data.cookies.length > 0) {
-                        data.cookies.forEach((cookie) => {
-                            const cookieRow = `
+            if (data.cookies && data.cookies.length > 0) {
+              data.cookies.forEach((cookie) => {
+                const cookieRow = `
                             <tr class="hover:bg-gray-100">
                                 <td class="border border-gray-400 px-4 py-2">${cookie.domain}</td>
                                 <td class="border border-gray-400 px-4 py-2">${cookie.name}</td>
@@ -149,52 +188,109 @@
                                 <td class="border border-gray-400 px-4 py-2">${cookie.manageCookiesLink}</td>
                             </tr>
                             `;
-                            document.getElementById("downloadButton").style.display = "block";
-                            cookieTableBody.insertAdjacentHTML("beforeend", cookieRow);
-                        });
-                    } else {
-                        cookieTableBody.innerHTML = `<tr><td colspan="10" class="border border-gray-400 px-4 py-2 text-center">No cookies found.</td></tr>`;
-                    }
+                document.getElementById("downloadButton").style.display =
+                  "block";
+                cookieTableBody.insertAdjacentHTML("beforeend", cookieRow);
+              });
+            } else {
+              cookieTableBody.innerHTML = `<tr><td colspan="10" class="border border-gray-400 px-4 py-2 text-center">No cookies found.</td></tr>`;
+            }
 
-                    scanLoading.style.display = "none"; // Hide loading indicator
-                } catch (error) {
-                    console.error("Error fetching cookie data:", error);
-                }
-            });
-
-        // JavaScript code for adding a website to scan and triggering the scan
-        document.getElementById("addUrlButton").addEventListener("click", function () {
-            const newUrl = document.getElementById("newUrl").value;
-
-            // Send the new URL to your Flask app's route for adding websites (in app.py)
-            fetch('/add_website', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({ 'url': newUrl })
-            })
-                .then(response => response.json())
-                .then(data => {
-                    // Handle the response from the backend if needed
-                    console.log(data);
-                });
-
-            // Clear the input field
-            document.getElementById("newUrl").value = "";
+            scanLoading.style.display = "none"; // Hide loading indicator
+          } catch (error) {
+            console.error("Error fetching cookie data:", error);
+          }
         });
 
-        // JavaScript code for handling the "Download File" button click
-        document
-            .getElementById("downloadButton")
-            .addEventListener("click", async function () {
-                try {
-                    // Trigger the `/download_excel` route to download the Excel file
-                    window.location.href = "/download_excel";
-                } catch (error) {
-                    console.error("Error downloading Excel file:", error);
-                }
+      // JavaScript code for adding a website to scan and triggering the scan
+      document
+        .getElementById("addUrlButton")
+        .addEventListener("click", function () {
+          const newUrl = document.getElementById("newUrl").value;
+
+          // Send the new URL to your Flask app's route for adding websites (in app.py)
+          fetch("/add_website", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({ url: newUrl }),
+          })
+            .then((response) => response.json())
+            .then((data) => {
+              // Handle the response from the backend if needed
+              console.log(data);
             });
+
+          // Clear the input field
+          document.getElementById("newUrl").value = "";
+        });
+
+      // JavaScript code for handling the "Download File" button click
+      document
+        .getElementById("downloadButton")
+        .addEventListener("click", async function () {
+          try {
+            // Trigger the `/download_excel` route to download the Excel file
+            window.location.href = "/download_excel";
+          } catch (error) {
+            console.error("Error downloading Excel file:", error);
+          }
+        });
+
+      document.getElementById("fileInput").addEventListener("change", function () {
+        const uploadButton = document.getElementById("uploadButton");
+        const selectedFileName = document.getElementById("selectedFileName");
+
+        if (this.files.length > 0) {
+          uploadButton.style.display = "block";
+          selectedFileName.style.display = "block"; // Show the element
+          selectedFileName.textContent = `Selected File: ${this.files[0].name}`;
+        } else {
+          uploadButton.style.display = "none";
+          selectedFileName.style.display = "none"; // Hide the element
+          selectedFileName.textContent = ""; // Clear the text
+        }
+      });
+
+      // JavaScript code for handling the "Upload" button click
+document.getElementById("uploadButton").addEventListener("click", function () {
+  try {
+    // Trigger the file upload function
+    uploadFile();
+  } catch (error) {
+    console.error("Error uploading file:", error);
+  }
+});
+
+      function uploadFile() {
+        const fileInput = document.getElementById("fileInput");
+        const uploadButton = document.getElementById("uploadButton");
+
+        const file = fileInput.files[0];
+        if (file) {
+          const formData = new FormData();
+          formData.append("file", file);
+
+          // Send the uploaded file to the server for processing
+          fetch("/upload", {
+            method: "POST",
+            body: formData,
+          })
+            .then((response) => response.json())
+            .then((data) => {
+              // Handle the response from the server if needed
+              console.log(data);
+              fileInput.value = ""; // Clear the file input field
+            })
+            .catch((error) => {
+              console.error("Error uploading file:", error);
+            });
+        } else {
+          // Handle the case where no file is selected
+          alert("Please select a file to upload.");
+        }
+      }
     </script>
-</body>
+  </body>
 </html>

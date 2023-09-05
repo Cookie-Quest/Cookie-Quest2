@@ -1,4 +1,6 @@
 from flask import Flask, render_template, jsonify, send_file, request, redirect, url_for
+from werkzeug.utils import secure_filename
+import os
 from selenium import webdriver
 from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.chrome.options import Options
@@ -17,9 +19,6 @@ from utils.perform_scan import  perform_scan
 from utils.store_websites_in_excel import store_websites_in_excel
 from selenium.common.exceptions import InvalidArgumentException
 from openpyxl import load_workbook
-
-
-# from utils.send_email import send_email
 import requests
 from apscheduler.schedulers.background import BackgroundScheduler
 import datetime, sched
@@ -32,25 +31,32 @@ init()
 
 app = Flask(__name__)
 
+# Define the upload folder where files will be stored
+UPLOAD_FOLDER = 'uploads'
+ALLOWED_EXTENSIONS = {'xlsx'}  # Set allowed file extensions
+
+app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
+
+# Global list to store website URLs
 website_urls = [
-         'https//www.afsdealerinsurance.com',
-         'https://ironwoodins.com/'
-     #     'https://www.aga-us.com/'
-     #'https://www.marshunderwritingsubmissioncenter.com ',
-    #     # Add more website URLs here
-       ]
+    'https://www.afsdealerinsurance.com',
+    'https://ironwoodins.com/'
+]
 
+# Function to add a website URL to the list
+def add_website_to_scan(website_url):
+    website_urls.append(website_url)
 
+# Function to get the current list of website URLs
+def get_website_list():
+    return website_urls
+
+# Route to render the HTML template
 @app.route('/')
 def index():
     return render_template('index.html')
 
-def add_website_to_scan(website_url):
-    website_urls.append(website_url)
-
-def get_website_list():
-    return website_urls
-
+# Route to add a new website URL to the list
 @app.route('/add_website', methods=['POST'])
 def add_website():
     data = request.get_json()
@@ -66,6 +72,7 @@ def add_website():
     else:
         return jsonify({"error": "URL not provided"}), 400
 
+# Route to scan cookies on websites
 @app.route('/scan_cookies', methods=['GET', 'POST'])
 def scan_cookies():
     global website_urls  # Use the global website_urls list
@@ -109,13 +116,14 @@ def scan_cookies():
 
     return jsonify({"cookies": cookie_data, "csv_filename": csv_filename, "excel_filename": excel_filename})
 
-
+# Error handler for InvalidArgumentException
 @app.errorhandler(InvalidArgumentException)
 def handle_invalid_argument_exception(error):
     # You can customize the error message and response as needed
     error_message = "Invalid argument: Please check the URL you provided."
     return render_template("error.html", error_message=error_message), 500  # Use status code 500 for internal server error
 
+# Route to download the Excel file
 @app.route('/download_excel')
 def download_excel():
     try:
@@ -147,22 +155,35 @@ def download_excel():
     except Exception as e:
         return f"An error occurred: {str(e)}"
 
+# Initialize the background scheduler
 scheduler = BackgroundScheduler(daemon=True)
 scheduler.start()
 
-# Add the scan function to the scheduler to run every 150 seconds
+# Add the scan function to the scheduler to run every 6 days
 scheduler.add_job(perform_scan, 'interval', days=6)  # Adjust the interval as needed
 
-@app.route('/upload', methods=['GET', 'POST'])
+# Function to check if a file has an allowed extension
+def allowed_file(filename):
+    return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
+
+# Route to upload an Excel file containing a list of websites
+# Route to upload a file
+@app.route('/upload', methods=['POST'])
 def upload_file():
-    global website_urls  # Make sure you're updating the global variable
+    global website_urls  
     if request.method == 'POST':
         file = request.files['file']
-        if file and file.filename.endswith('.xlsx'):
-            df = pd.read_excel(file)
-            print(df.head())  # Just printing the first 5 rows to console
+        if file and allowed_file(file.filename):
+            filename = secure_filename(file.filename)
+            file_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
 
-            # Assume URLs are in a column named 'URL' in the Excel file
+            # Ensure that the directory exists before saving the file
+            os.makedirs(os.path.dirname(file_path), exist_ok=True)
+
+            # Save the uploaded file
+            file.save(file_path)
+
+            df = pd.read_excel(file_path)
             new_urls = df['Website'].tolist()
 
             # Update the website_urls list
@@ -170,7 +191,16 @@ def upload_file():
 
             print(f"New website_urls: {website_urls}")  # Debugging
 
-            return redirect('/')
+            # Store the updated websites list in an Excel sheet (You should implement this function)
+            # excel_filename = store_websites_in_excel(website_urls)
+
+ # Store the updated websites list in an Excel sheet
+            excel_filename = store_websites_in_excel(website_urls)
+            
+            return jsonify({"message": "File uploaded successfully"})
+        else:
+            return jsonify({"error": "Invalid file format. Please upload an .xlsx file"}), 400
+
     return '''
     <!doctype html>
     <title>Upload an Excel File</title>
