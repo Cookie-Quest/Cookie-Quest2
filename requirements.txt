@@ -5,3 +5,6 @@ selenium
 pandas
 selenium
 openpyxl
+decouple
+apscheduler
+
