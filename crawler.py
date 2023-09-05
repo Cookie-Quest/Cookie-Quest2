@@ -1,4 +1,5 @@
 from flask import Flask, render_template, jsonify, send_file, request, redirect, url_for
+from openpyxl import load_workbook
 from selenium import webdriver
 from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.chrome.options import Options
@@ -17,6 +18,7 @@ from utils.perform_scan import  perform_scan
 from utils.store_websites_in_excel import store_websites_in_excel
 from selenium.common.exceptions import InvalidArgumentException
 from openpyxl import load_workbook
+
 
 
 # from utils.send_email import send_email
