@@ -1,4 +1,4 @@
-from flask import Flask, render_template, jsonify, send_file, request
+from flask import Flask, render_template, jsonify, send_file, request, redirect, url_for
 from selenium import webdriver
 from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.chrome.options import Options
@@ -15,7 +15,7 @@ from utils.get_footer_details import get_footer_details
 from utils.scan_website import scan_website
 from utils.perform_scan import  perform_scan
 from utils.store_websites_in_excel import store_websites_in_excel
-from utils.send_email import send_email
+# from utils.send_email import send_email
 import requests
 from apscheduler.schedulers.background import BackgroundScheduler
 import datetime, sched
@@ -162,7 +162,39 @@ scheduler.start()
 # Add the scan function to the scheduler to run every 150 seconds
 scheduler.add_job(perform_scan, 'interval', days=6)  # Adjust the interval as needed
 
+@app.route('/upload', methods=['GET', 'POST'])
+def upload_file():
+    global website_urls  # Make sure you're updating the global variable
+    if request.method == 'POST':
+        file = request.files['file']
+        if file and file.filename.endswith('.xlsx'):
+            df = pd.read_excel(file)
+            print(df.head())  # Just printing the first 5 rows to console
+
+            # Assume URLs are in a column named 'URL' in the Excel file
+            new_urls = df['Website'].tolist()
+
+            # Update the website_urls list
+            website_urls.extend(new_urls)
+
+            print(f"New website_urls: {website_urls}")  # Debugging
+
+            return redirect('/')
+    return '''
+    <!doctype html>
+    <title>Upload an Excel File</title>
+    <h1>Upload an Excel file</h1>
+    <form method=post enctype=multipart/form-data>
+      <input type=file name=file>
+      <input type=submit value=Upload>
+    </form>
+    '''
+
+
+
+
 if __name__ == "__main__":
     app.run(debug=True)
+
 
 
