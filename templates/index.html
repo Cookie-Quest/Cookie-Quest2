@@ -1,51 +1,63 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Cookie Scanner 🍪</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
-      tailwind.config = {
-        theme: {
-          extend: {
-            colors: {
-              clifford: "#1d4ed8",
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        clifford: "#1d4ed8",
+                    },
+                },
             },
-          },
-        },
-      };
+        };
     </script>
     <style>
-      /* Add custom CSS for the loading indicator */
-      #scanButton {
-        position: relative;
-      }
-
-      #scanLoading {
-        position: absolute;
-        inset: 0;
-        display: none;
-        background-color: rgba(29, 78, 216, 0.9);
-        color: white;
-        border-radius: 0.375rem;
-      }
-
-      #scanLoading span {
-        animation: ping 1s infinite;
-      }
-
-      @keyframes ping {
-        0%, 100% {
-          opacity: 0;
+        /* Add custom CSS for the loading indicator */
+        #scanButton {
+            position: relative;
         }
-        50% {
-          opacity: 1;
+
+        #scanLoading {
+            position: absolute;
+            inset: 0;
+            display: none;
+            background-color: rgba(29, 78, 216, 0.9);
+            color: white;
+            border-radius: 0.375rem;
         }
-      }
+
+        #scanLoading span {
+            animation: ping 1s infinite;
+        }
+
+        @keyframes ping {
+            0%, 100% {
+                opacity: 0;
+            }
+            50% {
+                opacity: 1;
+            }
+        }
+        #uploadAlert {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            background-color: rgba(29, 78, 216, 0.9);
+            color: white;
+            padding: 10px;
+            text-align: center;
+            
+        }
     </style>
-  </head>
-  <body class="flex justify-center items-start min-h-screen bg-gray-100">
+</head>
+<body class="flex justify-center items-start min-h-screen bg-gray-100">
     <div class="container mt-16">
       <h1 class="text-3xl font-bold text-center text-clifford">
         Cookie Scanner 🍪
@@ -67,8 +79,41 @@
           Add URL
         </button>
       </div>
+      
+      <!-- Move the "Choose File" button above the "Scan Cookies" button -->
       <div class="flex justify-center mt-4">
-        <!-- The button contains the loading indicator -->
+        <input
+          type="file"
+          id="fileInput"
+          accept=".xlsx"
+          style="display: none;"
+        />
+        <label
+          for="fileInput"
+          class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-xl cursor-pointer"
+        >
+          Choose File
+        </label>
+        <p
+          id="selectedFileName"
+          style="display: none; padding: 0.5rem;"
+        ></p>
+        <button
+          id="uploadButton"
+          class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-xl"
+          style="display: none;"
+        >
+          Upload
+        </button>
+      </div>
+
+              <!-- Alert message for successful file upload -->
+              <div id="uploadAlert" class="mt-2 text-green-600 text-center" style="display: none;">
+                File uploaded successfully.
+            </div>
+      
+      <div class="flex justify-center mt-4">
+        <!-- "Scan Cookies" button with loading indicator -->
         <button
           id="scanButton"
           class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-xl"
@@ -99,60 +144,49 @@
         ></a>
       </div>
 
-      <!-- Add this HTML code within your <div class="flex justify-center mt-4"> element -->
-      <div class="flex justify-center mt-4">
+    <!-- Add this HTML code within your <div class="flex justify-center mt-4"> element -->
+    <!-- <div class="flex justify-center mt-4">
         <input
-          type="file"
-          id="fileInput"
-          accept=".xlsx"
-          style="display: none;"
-        /> <!-- Hide the file input initially -->
-        <label
-          for="fileInput"
-          class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-xl cursor-pointer"
-        >
-          Choose File
-        </label>
-        <p
-          id="selectedFileName"
-          style="display: none; padding: 0.5rem;"
-        ></p> <!-- Element to display the selected file's name -->
+            id="newUrl"
+            type="text"
+            class="border border-gray-400 px-4 py-2 rounded-lg w-1/2"
+            placeholder="Enter Single URL here"
+        />
         <button
-          id="uploadButton"
-          class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-xl"
-          style="display: none;"
+            id="addUrlButton"
+            class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-20-none rounded-lg ml-4"
         >
-          Upload
+            Add URL
         </button>
-      </div>
+    </div> -->
 
-      <div id="cookieResults" class="mt-4">
+    <div id="cookieResults" class="mt-4">
         <table class="border-collapse border border-gray-400 w-full">
-          <thead class="bg-gray-200">
+            <thead class="bg-gray-200">
             <tr class="hover:bg-gray-100">
-              <th class="border border-gray-400 px-4 py-2">Scanned Website</th>
-              <th class="border border-gray-400 px-4 py-2">Cookie Name</th>
-              <th class="border border-gray-400 px-4 py-2">Expires</th>
-              <th class="border border-gray-400 px-4 py-2">Duration</th>
-              <th class="border border-gray-400 px-4 py-2">Secure</th>
-              <th class="border border-gray-400 px-4 py-2">CCM implemented</th>
-              <th class="border border-gray-400 px-4 py-2">Button Type</th>
-              <th class="border border-gray-400 px-4 py-2">
-                Consent banner present
-              </th>
-              <th class="border border-gray-400 px-4 py-2">Provider</th>
-              <th class="border border-gray-400 px-4 py-2">Pop up working</th>
-              <th class="border border-gray-400 px-4 py-2">
-                manage cookies link present in the footer
-              </th>
+                <th class="border border-gray-400 px-4 py-2">Scanned Website</th>
+                <th class="border border-gray-400 px-4 py-2">Cookie Name</th>
+                <th class="border border-gray-400 px-4 py-2">Expires</th>
+                <th class="border border-gray-400 px-4 py-2">Duration</th>
+                <th class="border border-gray-400 px-4 py-2">Secure</th>
+                <th class="border border-gray-400 px-4 py-2">CCM implemented</th>
+                <th class="border border-gray-400 px-4 py-2">Button Type</th>
+                <th class="border border-gray-400 px-4 py-2">
+                    Consent banner present
+                </th>
+                <th class="border border-gray-400 px-4 py-2">Provider</th>
+                <th class="border border-gray-400 px-4 py-2">Pop up working</th>
+                <th class="border border-gray-400 px-4 py-2">
+                    manage cookies link present in the footer
+                </th>
             </tr>
-          </thead>
-          <tbody id="cookieTableBody">
+            </thead>
+            <tbody id="cookieTableBody">
             <!-- Rows will be dynamically added here -->
-          </tbody>
+            </tbody>
         </table>
-      </div>
     </div>
+</div>
 
     <script>
       document
@@ -266,6 +300,8 @@ document.getElementById("uploadButton").addEventListener("click", function () {
       function uploadFile() {
         const fileInput = document.getElementById("fileInput");
         const uploadButton = document.getElementById("uploadButton");
+        const uploadAlert = document.getElementById("uploadAlert"); 
+
 
         const file = fileInput.files[0];
         if (file) {
@@ -282,6 +318,14 @@ document.getElementById("uploadButton").addEventListener("click", function () {
               // Handle the response from the server if needed
               console.log(data);
               fileInput.value = ""; // Clear the file input field
+
+                      // Show the upload alert message
+            uploadAlert.style.display = "block"; 
+                        // Set a timeout to hide the alert after 10 seconds
+                        setTimeout(() => {
+                            uploadAlert.style.display = "none";
+                        }, 5000);
+
             })
             .catch((error) => {
               console.error("Error uploading file:", error);
