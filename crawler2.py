@@ -15,6 +15,8 @@ from utils.get_footer_details import get_footer_details
 from utils.scan_website import scan_website
 from utils.perform_scan import  perform_scan
 from utils.store_websites_in_excel import store_websites_in_excel
+from selenium.common.exceptions import InvalidArgumentException
+
 # from utils.send_email import send_email
 import requests
 from apscheduler.schedulers.background import BackgroundScheduler
@@ -29,10 +31,13 @@ init()
 app = Flask(__name__)
 
 website_urls = [
-         'https://ironwoodins.com/',
+         'https//www.afsdealerinsurance.com',
+         'https://ironwoodins.com/'
      #     'https://www.aga-us.com/'
+     #'https://www.marshunderwritingsubmissioncenter.com ',
     #     # Add more website URLs here
        ]
+
 
 @app.route('/')
 def index():
@@ -59,12 +64,11 @@ def add_website():
     else:
         return jsonify({"error": "URL not provided"}), 400
 
-
-
 @app.route('/scan_cookies', methods=['GET', 'POST'])
 def scan_cookies():
-    website_urls = get_website_list()
-    print("Websites to scan:", website_urls)  # Print the list of websites to scan for debugging
+    global website_urls  # Use the global website_urls list
+
+    # Rest of your code...
 
     banner_identifiers = [
         ("ID", "truste-consent-track"),
@@ -76,28 +80,14 @@ def scan_cookies():
     cookie_data = []
 
     for url in website_urls:
-        print("Scanning website:", url)  # Print the currently scanned website for debugging
-        cookies = scan_website(url, banner_identifiers)
-        cookie_data.extend(cookies)
-        
-    #     website_urls = [
-    # #      'https://ironwoodins.com/',
-    #       #'https://www.aga-us.com/'
-    # #     # Add more website URLs here
-    #    ]
-
-    banner_identifiers = [
-        ("ID", "truste-consent-track"),
-        ("CLASS_NAME", "osano-cm-dialog__buttons"),
-        ("ID", "osano-cm-buttons")
-        # Add more banner identifiers if needed
-    ]
-
-    cookie_data = []
-
-    for url in website_urls:
-        cookies = scan_website(url, banner_identifiers)
-        cookie_data.extend(cookies)
+        try:
+            print("Scanning website:", url)  # Print the currently scanned website for debugging
+            cookies = scan_website(url, banner_identifiers)
+            cookie_data.extend(cookies)
+        except Exception as e:
+            # Log the error and continue with the next website scanning task
+            print(f"Error scanning website {url}: {str(e)}")
+            continue  # Continue with the next website scanning task
 
     # Create a CSV file and write the data
     csv_filename = "cookie_data.csv"
@@ -116,10 +106,13 @@ def scan_cookies():
     df.to_excel(excel_filename, index=False)
 
     return jsonify({"cookies": cookie_data, "csv_filename": csv_filename, "excel_filename": excel_filename})
-   # After scanning cookies, call the send_email function
-# email_recipient = "samira.test88@gmail.com"  # Replace with the recipient's email address
-# email_attachment = "cookie_data.xlsx"  # Replace with the path to the Excel file you want to attach
-# send_email(email_attachment, email_recipient)
+
+
+@app.errorhandler(InvalidArgumentException)
+def handle_invalid_argument_exception(error):
+    # You can customize the error message and response as needed
+    error_message = "Invalid argument: Please check the URL you provided."
+    return render_template("error.html", error_message=error_message), 500  # Use status code 500 for internal server error
 
 @app.route('/download_excel')
 def download_excel():
@@ -128,9 +121,6 @@ def download_excel():
         excel_file_path = "cookie_data.xlsx"
 
         # Adjust column widths before sending the file
-        from openpyxl import load_workbook
-
-        # Load the Excel file
         workbook = load_workbook(excel_file_path)
         sheet = workbook.active
 
@@ -155,7 +145,6 @@ def download_excel():
     except Exception as e:
         return f"An error occurred: {str(e)}"
 
-       
 scheduler = BackgroundScheduler(daemon=True)
 scheduler.start()
 
@@ -190,11 +179,5 @@ def upload_file():
     </form>
     '''
 
-
-
-
 if __name__ == "__main__":
     app.run(debug=True)
-
-
-
