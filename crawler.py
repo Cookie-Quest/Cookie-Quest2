@@ -18,6 +18,7 @@ from utils.store_websites_in_excel import store_websites_in_excel
 from selenium.common.exceptions import InvalidArgumentException
 from openpyxl import load_workbook
 
+
 # from utils.send_email import send_email
 import requests
 from apscheduler.schedulers.background import BackgroundScheduler
