@@ -159,7 +159,7 @@ def check_and_report_banner(driver):
             consent_banner_div = driver.find_element(getattr(By, identifier_type), identifier_value)
             buttons = consent_banner_div.find_elements(By.TAG_NAME, "button")
             if buttons:
-                print(f"{Fore.GREEN}Consent banner present on the page:{Style.RESET_ALL}")
+                print(f"{Fore.GREEN}Consent banner present on the page{Style.RESET_ALL}")
                 print(f"{Fore.GREEN}Number of buttons: {Style.RESET_ALL}{Fore.CYAN}{len(buttons)}{Style.RESET_ALL}")
                 for idx, button in enumerate(buttons, start=1):
                     print(f"{Fore.GREEN}Button {idx} text: {Style.RESET_ALL}{Fore.CYAN}{button.text}{Style.RESET_ALL}")
