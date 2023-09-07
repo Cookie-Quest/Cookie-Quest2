@@ -34,8 +34,11 @@ ALLOWED_EXTENSIONS = {'xlsx'}  # Set allowed file extensions
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 # Global list to store website URLs
 website_urls = [
-    'https://www.afsdealerinsurance.com',
-    'https://ironwoodins.com/'
+    # 'https://www.afsdealerinsurance.com',
+    # 'https://ironwoodins.com/',
+     'http://www.victorinsurance.nl/',
+    'https://services.marshspecialty.com/'
+
 ]
 # Function to add a website URL to the list
 def add_website_to_scan(website_url):

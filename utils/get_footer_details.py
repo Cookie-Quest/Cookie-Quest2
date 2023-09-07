@@ -1,8 +1,9 @@
-# utils/get_footer_details.py
-from utils.find_element_with_multiple_xpaths import find_element_with_multiple_xpaths
 from selenium.webdriver.common.by import By
+from utils.find_element_with_multiple_xpaths import find_element_with_multiple_xpaths
 from selenium.common.exceptions import NoSuchElementException
 from colorama import Fore, Style, Back, init
+
+init()
 
 def get_footer_details(driver):
     try:
@@ -15,7 +16,8 @@ def get_footer_details(driver):
             '//html/body/div/div/p/footer',
             '//html/body',
             '//footer[@class="my-footer"]',
-            '//html/body/app-root/div'
+            '//html/body/app-root/div',
+            '//html//body//footer/div/div/div/'
         ]
 
         footer_element = find_element_with_multiple_xpaths(driver, xpaths_to_try)
@@ -23,24 +25,26 @@ def get_footer_details(driver):
         if footer_element:
             footer_text = footer_element.text
 
-            translations = [
-                "Manage Cookies",
-                "Beheer cookies",  # Dutch
-                "Gérer les cookies",  # French
-                "Gestione dei cookie",  # Italian
-                "Gestión de cookies",  # Spanish
-                "Verwalten von Cookies",  # German
+            translations = {
+                "en": "Manage Cookies",
+                "nl": "Beheer cookies",  # Dutch
+                "fr": "Gérer les cookies",  # French
+                "it": "Gestione dei cookie",  # Italian
+                "es": "Gestión de cookies",  # Spanish
+                "de": "Verwalten von Cookies",  # German
                 # Add more translations for other languages as needed
-            ]
+            }
 
-            found_translation = False
-            for translation in translations:
+            found_translation = None
+
+            for translation in translations.values():
                 if translation.lower() in footer_text.lower():
-                    found_translation = True
+                    found_translation = translation
                     break
 
             if found_translation:
-                manage_cookies_link_xpath = "//a[contains(translate(., 'ABCDEFGHIJKLMNOPQRSTUVWXYZ', 'abcdefghijklmnopqrstuvwxyz'), 'manage cookies')]"
+                # Updated XPath expression
+                manage_cookies_link_xpath = f'//a[contains(translate(., "ABCDEFGHIJKLMNOPQRSTUVWXYZ", "abcdefghijklmnopqrstuvwxyz"), "{found_translation.lower()}")]'
                 try:
                     manage_cookies_link = footer_element.find_element(By.XPATH, manage_cookies_link_xpath)
                     if manage_cookies_link.is_enabled():
